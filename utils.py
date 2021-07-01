@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-04-16 13:18:37
 LastEditors: loujiong
-LastEditTime: 2021-07-01 15:06:55
+LastEditTime: 2021-07-01 16:11:42
 Description: utils file
 Email:  413012592@qq.com
 '''
@@ -160,6 +160,7 @@ class Application():
                 self.task_graph.add_edge(random.choice(node_for_level[i]) + 1,j + 1)
                 current_edge_num += 1
 
+        
 # ----------------------- connect the previous and the next level---------------------------     
         print("node_for_level:{0}".format(node_for_level))
         # current_edge_num = 0
@@ -174,6 +175,10 @@ class Application():
         #             self.task_graph.add_edge(random.choice(node_for_level[i-1]) + 1 ,j + 1)
         #             current_edge_num += 1
         
+        # add sink and source edges to current_edge_num
+        current_edge_num += len(node_for_level[0])
+        current_edge_num += len(node_for_level[-1])
+
         print("edge_num:{0},current_edge_num:{1}".format(edge_num,current_edge_num))
         print("edge list:{0}".format([(u - 1,v - 1) for u,v in self.task_graph.edges()]))
 

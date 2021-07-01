@@ -2,14 +2,13 @@
 Author: 娄炯
 Date: 2021-04-16 16:18:15
 LastEditors: loujiong
-LastEditTime: 2021-06-10 19:45:03
+LastEditTime: 2021-07-01 15:55:52
 Description: draw task graph
 Email:  413012592@qq.com
 '''
 import networkx as nx
 from random import randint as rd
 import matplotlib.pyplot as plt
-# # import scipy
 import plotly as py
 import plotly.figure_factory as ff
 from datetime import datetime
@@ -71,7 +70,7 @@ def get_layered_pos(G):
             edge_rad[(u,v)] = 0
     return pos,edge_rad,edge_pos
 
-def draw(G):
+def draw(G, is_save = True, _application_index = 0):
     pos,edge_rad,edge_pos = get_layered_pos(G)
     nx.draw_networkx_nodes(G, pos)
     labels = {i:(i,G.nodes[i]["w"]) for i in G.nodes()}
@@ -91,7 +90,10 @@ def draw(G):
                                     ),
                     )
     plt.axis('equal')
-    plt.show()
+    if is_save:
+        plt.savefig('task_graph/task_graph_{0}.png'.format(_application_index))
+    else:
+        plt.show()
 
 
 def draw_gantt(_application_list,edge_list,cloud):

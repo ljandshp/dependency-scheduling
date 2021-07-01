@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-06-03 15:49:12
 LastEditors: loujiong
-LastEditTime: 2021-07-01 15:03:10
+LastEditTime: 2021-07-01 15:54:26
 Description: no re_schedule
 Email:  413012592@qq.com
 '''
@@ -317,7 +317,7 @@ def re_scheduling(is_draw=False,
         print("remain_length_for_entry:{0}".format(application_list[_release_index].task_graph.nodes[0]["current_remain_length"]))
         print("(task_id,select_node_id,start_time,finish_time,sub_deadline)")
         print([(i,application_list[_release_index].task_graph.nodes[i]["selected_node"],application_list[_release_index].task_graph.nodes[i]["start_time"],application_list[_release_index].task_graph.nodes[i]["finish_time"],application_list[_release_index].task_graph.nodes[i]["sub_deadline"]+application_list[_release_index].release_time) for i in application_list[_release_index].task_graph.nodes()])
-        # draw.draw(application_list[_release_index].task_graph)
+        draw.draw(application_list[_release_index].task_graph, is_save = True, _application_index = _release_index)
         # utils.check(application_list)
 
     # 设置 finish_task_set
