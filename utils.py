@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-04-16 13:18:37
 LastEditors: loujiong
-LastEditTime: 2021-07-01 16:11:42
+LastEditTime: 2021-07-01 16:15:59
 Description: utils file
 Email:  413012592@qq.com
 '''
@@ -127,6 +127,7 @@ class Application():
         task_num=5,
         application_index = -1
     ):
+        print("start initial application {0}".format(application_index))
         self.release_time = release_time
         self.finish_time = -1
         self.release_node = release_node
@@ -162,7 +163,7 @@ class Application():
 
         
 # ----------------------- connect the previous and the next level---------------------------     
-        print("node_for_level:{0}".format(node_for_level))
+        
         # current_edge_num = 0
         # for i in range(level_num - 1):
         #     for j in node_for_level[i]:
@@ -175,6 +176,8 @@ class Application():
         #             self.task_graph.add_edge(random.choice(node_for_level[i-1]) + 1 ,j + 1)
         #             current_edge_num += 1
         
+        print("node_for_level:{0}".format(node_for_level))
+
         # add sink and source edges to current_edge_num
         current_edge_num += len(node_for_level[0])
         current_edge_num += len(node_for_level[-1])

@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-04-16 16:18:15
 LastEditors: loujiong
-LastEditTime: 2021-07-01 15:55:52
+LastEditTime: 2021-07-01 16:39:59
 Description: draw task graph
 Email:  413012592@qq.com
 '''
@@ -92,6 +92,7 @@ def draw(G, is_save = True, _application_index = 0):
     plt.axis('equal')
     if is_save:
         plt.savefig('task_graph/task_graph_{0}.png'.format(_application_index))
+        plt.clf()
     else:
         plt.show()
 
