@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-06-03 15:49:12
 LastEditors: loujiong
-LastEditTime: 2021-06-27 22:41:26
+LastEditTime: 2021-07-01 15:03:10
 Description: no re_schedule
 Email:  413012592@qq.com
 '''
@@ -162,10 +162,13 @@ def re_scheduling(is_draw=False,
             
             _can_be_scheduled_label, application_level_length, task_level_length = unscheduled_tasks_sorted_by_remain_length[(_ap_index, selected_task_index)]
             unscheduled_tasks_sorted_by_remain_length.pop()
-            print()
-            print("application index:{0},task index:{1}, _can_be_scheduled_label:{2}".format(_ap_index, selected_task_index,_can_be_scheduled_label))
+            
 
             _current_application = application_list[_ap_index]
+
+            print()
+            print("application index:{0},task index:{1}, _can_be_scheduled_label:{2}, release_time:{3}, pre_set_deadline:{4}, sub_deadline:{5}".format(_ap_index, selected_task_index,_can_be_scheduled_label,_current_application.release_time,_current_application.deadline, _current_application.task_graph.nodes[selected_task_index]["sub_deadline"]))
+            
             st = time.time()
             if selected_task_index == 0 or selected_task_index == _current_application.task_graph.number_of_nodes(
             ) - 1:
@@ -260,6 +263,7 @@ def re_scheduling(is_draw=False,
                 actual_start_time, _cpu, selected_interval_key = edge_list[
                     selected_node].find_actual_earliest_start_time_by_planed(
                         earliest_start_time, estimated_runtime,_release_time)
+                print("application release time:{0}".format(_current_application.release_time))
                 print("actual_start_time:{0}".format(actual_start_time))
                 print(edge_list[selected_node].planed_start_finish)
                 
@@ -388,7 +392,7 @@ def re_scheduling(is_draw=False,
     print("data_rate_for_cloud:{0}".format(cloud.data_rate))
         
 if __name__ == '__main__':
-    is_draw = True
+    is_draw = False
     application_num=20
     application_average_interval=120
     edge_number=10

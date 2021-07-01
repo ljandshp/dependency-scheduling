@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-04-16 13:18:37
 LastEditors: loujiong
-LastEditTime: 2021-06-27 22:21:17
+LastEditTime: 2021-07-01 15:06:55
 Description: utils file
 Email:  413012592@qq.com
 '''
@@ -451,9 +451,10 @@ def get_node_with_least_cost_constrained_by_subdeadline(selected_task_index, _ap
     # if no node satisfy the sub_deadline
     if selected_node < 0:
         selected_node = np.argmin(np.array(finish_time_list))
-        print("selected_task_index:{0}".format(selected_task_index))
-        print(actual_start_time_list)
-        print(finish_time_list)
+        print("unsatisfied deadline")
+        print("selected_task_index:{0},selected_node:{1}".format(selected_task_index,selected_node))
+        print("actual_start_time_list:{0}".format(actual_start_time_list))
+        print("finish_time_list:{0}".format(finish_time_list))
         
     # if _application.application_index == 8 and selected_task_index == 1:
     #     quit()
