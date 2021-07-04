@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-06-03 15:49:12
 LastEditors: loujiong
-LastEditTime: 2021-07-01 16:41:24
+LastEditTime: 2021-07-03 15:41:15
 Description: no re_schedule
 Email:  413012592@qq.com
 '''
@@ -26,7 +26,7 @@ def re_scheduling(is_draw=False,
                       application_average_interval=10,
                       edge_number=10,
                       scheduler = utils.get_node_with_least_start_time):
-    deadline_alpha = 4/7
+    deadline_alpha = 1.5/7
     # debug
     total_len_unscheduled_tasks_list = []
     
@@ -53,7 +53,7 @@ def re_scheduling(is_draw=False,
     # save task graph figures
     for i in range(application_num):
         print("application_{0} node number:{1} edge number:{2}".format(i, application_list[i].task_graph.number_of_nodes(), application_list[i].task_graph.number_of_edges()))
-        draw.draw(application_list[i].task_graph, is_save = True, _application_index = i)
+        # draw.draw(application_list[i].task_graph, is_save = True, _application_index = i)
 
     # calculate the total/average task weight
     t_sum = 0
@@ -81,11 +81,11 @@ def re_scheduling(is_draw=False,
         print()
         utils.set_tmax(_application,edge_list,cloud)
         _application.deadline = deadline_alpha * _application.tmax
-        # print("_application.tmax:{0}".format(_application.tmax))
-        # print("deadline:{0}".format(_application.deadline))
-        # _app_total_weight = sum([_application.task_graph.nodes[_t]["w"] for _t in _application.task_graph.nodes()])
-        # print("ideal local time:{0}".format(_app_total_weight/sum([1/_edge.process_data_rate for _edge in edge_list])))
-        # print("longgest path:{0}".format(min([_edge.process_data_rate for _edge in edge_list])*sum([_application.task_graph.nodes[_t]["w"] for _t in nx.dag_longest_path(_application.task_graph,weight="w")])))
+        print("_application.tmax:{0}".format(_application.tmax))
+        print("deadline:{0}".format(_application.deadline))
+        _app_total_weight = sum([_application.task_graph.nodes[_t]["w"] for _t in _application.task_graph.nodes()])
+        print("ideal local time:{0}".format(_app_total_weight/sum([1/_edge.process_data_rate for _edge in edge_list])))
+        print("longgest path:{0}".format(min([_edge.process_data_rate for _edge in edge_list])*sum([_application.task_graph.nodes[_t]["w"] for _t in nx.dag_longest_path(_application.task_graph,weight="w")])))
 
     edge_weight=(sum([_edge.upload_data_rate for _edge in edge_list])*(edge_number-1)+cloud.data_rate*2*edge_number)/((edge_number+1)*(edge_number+1))
     node_weight=(sum([_edge.process_data_rate for _edge in edge_list])+cloud.process_data_rate)/(edge_number+1)
@@ -397,8 +397,8 @@ def re_scheduling(is_draw=False,
         
 if __name__ == '__main__':
     is_draw = False
-    application_num=20
-    application_average_interval=120
+    application_num=100
+    application_average_interval=100
     edge_number=10
     # re_scheduling(is_draw=is_draw,
     #             application_num=application_num,
