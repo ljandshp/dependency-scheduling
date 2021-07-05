@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-06-03 15:49:12
 LastEditors: loujiong
-LastEditTime: 2021-07-05 16:18:56
+LastEditTime: 2021-07-05 16:24:20
 Description: no re_schedule
 Email:  413012592@qq.com
 '''
@@ -121,7 +121,7 @@ def re_scheduling(is_draw=False,
 
         #update self.planed_is_task_for_each_time, self.planed_task_for_each_time, update self.is_task_for_each_time, and self.task_for_each_time
         for _edge_index,_edge_node in enumerate(edge_list):
-            # _edge_node.update_plan_to_actural(_release_time,finish_task_set[_edge_index],application_list)
+            _edge_node.update_plan_to_actural(_release_time,finish_task_set[_edge_index],application_list)
             _edge_node.generate_plan(_release_time)
             
         # current application and add unscheduled tasks
