@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-04-16 13:18:37
 LastEditors: loujiong
-LastEditTime: 2021-07-01 16:15:59
+LastEditTime: 2021-07-05 15:54:47
 Description: utils file
 Email:  413012592@qq.com
 '''
@@ -394,7 +394,7 @@ def get_node_with_least_cost_constrained_by_subdeadline(selected_task_index, _ap
                 max(_application.task_graph.nodes[u]["finish_time"],_release_time))
     # globally earliest start time is _application.release_time
     cloud_earliest_start_time = max(precedence_task_finish_time) if len(
-        precedence_task_finish_time) > 0 else _application.release_time
+        precedence_task_finish_time) > 0 else _release_time
     cloud_estimated_finish_time = cloud_earliest_start_time + _application.task_graph.nodes[selected_task_index]["w"] * cloud.process_data_rate
     actual_start_time_list = []
     for _selected_node in range(edge_number):
@@ -419,8 +419,8 @@ def get_node_with_least_cost_constrained_by_subdeadline(selected_task_index, _ap
                 precedence_task_finish_time.append(
                     max(_application.task_graph.nodes[u]["finish_time"],_release_time))
 
-        # globally earliest start time is _application.release_time
-        earliest_start_time = _application.release_time if len(
+        # globally earliest start time is _release_time
+        earliest_start_time = _release_time if len(
             precedence_task_finish_time) == 0 else max(
                 precedence_task_finish_time)
 
@@ -431,7 +431,7 @@ def get_node_with_least_cost_constrained_by_subdeadline(selected_task_index, _ap
         # actual start time and _cpu
         # print()
         # print(earliest_start_time, estimated_runtime,_release_time)
-        actual_start_time, _cpu, selected_interval_key = edge_list[_selected_node].find_actual_earliest_start_time_by_planed(earliest_start_time, estimated_runtime,_release_time)
+        actual_start_time, _, _ = edge_list[_selected_node].find_actual_earliest_start_time_by_planed(earliest_start_time, estimated_runtime,_release_time)
 
         # set start time and node for each task
         _selected_node_finish_time = actual_start_time + estimated_runtime
@@ -440,7 +440,7 @@ def get_node_with_least_cost_constrained_by_subdeadline(selected_task_index, _ap
         # print("edge:{0}, earliest_start_time:{1}".format(_selected_node,earliest_start_time))
     actual_start_time_list.append(cloud_earliest_start_time)    
     finish_time_list.append(cloud_estimated_finish_time)
-    sub_deadline = _application.task_graph.nodes[selected_task_index]["sub_deadline"]+_release_time
+    sub_deadline = _application.task_graph.nodes[selected_task_index]["sub_deadline"]+_application.release_time
     cost_per_mip_list = [i.cost_per_mip for i in edge_list]
     cost_per_mip_list.append(cloud.cost_per_mip)
     selected_node = -1

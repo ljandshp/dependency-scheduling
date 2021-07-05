@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-06-03 15:49:12
 LastEditors: loujiong
-LastEditTime: 2021-07-03 15:41:15
+LastEditTime: 2021-07-05 16:18:56
 Description: no re_schedule
 Email:  413012592@qq.com
 '''
@@ -121,7 +121,7 @@ def re_scheduling(is_draw=False,
 
         #update self.planed_is_task_for_each_time, self.planed_task_for_each_time, update self.is_task_for_each_time, and self.task_for_each_time
         for _edge_index,_edge_node in enumerate(edge_list):
-            _edge_node.update_plan_to_actural(_release_time,finish_task_set[_edge_index],application_list)
+            # _edge_node.update_plan_to_actural(_release_time,finish_task_set[_edge_index],application_list)
             _edge_node.generate_plan(_release_time)
             
         # current application and add unscheduled tasks
@@ -206,7 +206,7 @@ def re_scheduling(is_draw=False,
                 # globally earliest start time is _current_application.release_time
                 earliest_start_time = max(precedence_task_finish_time) if len(
                     precedence_task_finish_time
-                ) > 0 else _current_application.release_time
+                ) > 0 else _release_time
 
                 # set_latest_change_time
                 _current_application.set_latest_change_time(selected_node,selected_task_index,edge_list,cloud,earliest_start_time)
@@ -214,7 +214,7 @@ def re_scheduling(is_draw=False,
                 # update scheduled tasks' latest schedule time
                 # unscheduled_tasks[(_ap_index,selected_task_index)] = _current_application.task_graph.nodes[selected_task_index]["latest_change_time"]
                 # only schedule once
-                unscheduled_tasks[(_ap_index,selected_task_index)] = _current_application.release_time
+                unscheduled_tasks[(_ap_index,selected_task_index)] = _release_time
                 
                 # set start time and node for each task
                 _current_application.set_start_time(selected_task_index, selected_node,
@@ -248,7 +248,7 @@ def re_scheduling(is_draw=False,
                             max(_current_application.task_graph.nodes[u]["finish_time"],_release_time))
 
                 # globally earliest start time is _current_application.release_time
-                earliest_start_time = _current_application.release_time if len(
+                earliest_start_time = _release_time if len(
                     precedence_task_finish_time) == 0 else max(
                         precedence_task_finish_time)
 
@@ -282,7 +282,7 @@ def re_scheduling(is_draw=False,
                 
                 # update scheduled tasks' latest schedule time
                 # unscheduled_tasks[(_ap_index,selected_task_index)] = _current_application.task_graph.nodes[selected_task_index]["latest_change_time"]
-                unscheduled_tasks[(_ap_index,selected_task_index)] = _current_application.release_time
+                unscheduled_tasks[(_ap_index,selected_task_index)] = _release_time
                 
                 # update cpu state
                 edge_list[selected_node].set_cpu_state_by_planed(_cpu, actual_start_time,
