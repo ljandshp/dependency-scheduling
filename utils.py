@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-04-16 13:18:37
 LastEditors: loujiong
-LastEditTime: 2021-07-06 15:32:08
+LastEditTime: 2021-07-06 20:08:53
 Description: utils file
 Email:  413012592@qq.com
 '''
@@ -61,33 +61,36 @@ class Edge():
             if _start < actual_start_time:
                 self.planed_start_finish[_cpu] = np.vstack([self.planed_start_finish[_cpu], np.array([_start, actual_start_time - 1])])
 
-    def update_plan_to_actural(self, _release_time, finish_task_set,
+    def update_plan_to_actural(self, _release_time, new_finish_task_set,
                                application_list):
-        finish_time_list = [0 for i in range(self.task_concurrent_capacity)]
-        task_num = len(finish_task_set)
-
-        # sort finished task_set by the start time
-        # print(finish_task_set)
-        ids = finish_task_set[:,2].argsort()
-        # print("\n",ids)
-        
-        self.start_finish = [[] for cpu in range(self.task_concurrent_capacity)]
-        for k in ids:
-            _ap_index, _ta_index, start_time, finish_time = [int(i) for i in finish_task_set[k]]
+        for item in new_finish_task_set:
+            _ap_index, _ta_index, start_time, finish_time = [int(i) for i in item]
             cpu = application_list[_ap_index].task_graph.nodes()[_ta_index]["cpu"]
+            # print(" _ap_index, _ta_index, start_time, finish_time", _ap_index, _ta_index, start_time, finish_time)
+            
             if start_time == finish_time:
                 continue
-            if finish_time_list[cpu] < start_time:
-                self.start_finish[cpu].append([finish_time_list[cpu],start_time - 1])
-                finish_time_list[cpu] = finish_time
-            elif finish_time_list[cpu] == start_time:
-                finish_time_list[cpu] = finish_time
-            elif finish_time_list[cpu] > start_time:
-                print("cross_fi_st_error")
-                quit()
-        for cpu, f in enumerate(finish_time_list):
-            self.start_finish[cpu].append([f, 10000000000000])
-            self.start_finish[cpu] = np.array(self.start_finish[cpu])
+            
+            # first find the item in self.start_finish[cpu]
+            # print(self.start_finish[cpu])
+            is_in_interval = (self.start_finish[cpu][:,0] <= start_time) * 1 + (self.start_finish[cpu][:,1] >= finish_time-1) * 1
+            interval_key = np.argmax(is_in_interval)
+            # print(interval_key)
+
+            # then try to split the time interval 
+            _start = self.start_finish[cpu][interval_key][0]
+            _end = self.start_finish[cpu][interval_key][1]
+            # delete time interval
+            self.start_finish[cpu] = np.delete(self.start_finish[cpu], interval_key, 0)
+            if _end == 10000000000000:
+                self.start_finish[cpu] = np.vstack([self.start_finish[cpu], np.array([finish_time, _end])])
+            elif _end > finish_time - 1:
+                self.start_finish[cpu] = np.vstack([self.start_finish[cpu], np.array([finish_time, _end])])
+            if _start < start_time:
+                self.start_finish[cpu] = np.vstack([self.start_finish[cpu], np.array([_start, start_time - 1])])
+        
+            # print("self.start_finish",self.start_finish)
+               
 
     def generate_plan(self, _release_time):
         self.planed_start_finish = [0 for i in range(self.task_concurrent_capacity)]

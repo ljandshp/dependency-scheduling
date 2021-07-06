@@ -1,9 +1,9 @@
 '''
 Author: 娄炯
-Date: 2021-07-05 17:02:21
+Date: 2021-04-16 13:18:37
 LastEditors: loujiong
-LastEditTime: 2021-07-05 17:08:32
-Description: utils file using chain
+LastEditTime: 2021-07-06 18:57:40
+Description: utils file
 Email:  413012592@qq.com
 '''
 import networkx as nx
@@ -16,9 +16,6 @@ import math
 import numpy as np
 import pqdict
 
-class Node():
-    def __init__(self,initdata):
-        self.data = initdata
 class Edge():
     def __init__(self, task_concurrent_capacity, process_data_rate,
                  upload_data_rate, cost_per_mip = 1):
@@ -64,13 +61,16 @@ class Edge():
             if _start < actual_start_time:
                 self.planed_start_finish[_cpu] = np.vstack([self.planed_start_finish[_cpu], np.array([_start, actual_start_time - 1])])
 
-    def update_plan_to_actural(self, _release_time, finish_task_set,
+    def update_plan_to_actural(self, _release_time, new_finish_task_set,
                                application_list):
+        
         finish_time_list = [0 for i in range(self.task_concurrent_capacity)]
         task_num = len(finish_task_set)
 
         # sort finished task_set by the start time
+        # print(finish_task_set)
         ids = finish_task_set[:,2].argsort()
+        print("len(ids)",len(ids))
         
         self.start_finish = [[] for cpu in range(self.task_concurrent_capacity)]
         for k in ids:
@@ -83,6 +83,9 @@ class Edge():
                 finish_time_list[cpu] = finish_time
             elif finish_time_list[cpu] == start_time:
                 finish_time_list[cpu] = finish_time
+            elif finish_time_list[cpu] > start_time:
+                print("cross_fi_st_error")
+                quit()
         for cpu, f in enumerate(finish_time_list):
             self.start_finish[cpu].append([f, 10000000000000])
             self.start_finish[cpu] = np.array(self.start_finish[cpu])
@@ -117,9 +120,9 @@ class Edge():
                 
 # the speed of the cloud is fastest
 class Cloud():
-    def __init__(self, cost_per_mip = 4):
+    def __init__(self, cost_per_mip = 4,data_rate = 15):
         self.process_data_rate = 2
-        self.data_rate = 30
+        self.data_rate = data_rate
         self.cost_per_mip = cost_per_mip
 
 class Application():
@@ -235,9 +238,9 @@ class Application():
 
         for u, v in self.task_graph.edges():
             if u == source_node or v == sink_node:
-                self.task_graph.edges[u, v]["e"] = rd(6, 9)
+                self.task_graph.edges[u, v]["e"] = rd(2, 7)
             else:
-                self.task_graph.edges[u, v]["e"] = rd(6, 9)
+                self.task_graph.edges[u, v]["e"] = rd(2, 7)
 
     def generate_node_for_level(self, node_num, level_num):
         node_number_for_level = [[1] for i in range(level_num)]
@@ -472,7 +475,7 @@ def get_node_with_least_cost_constrained_by_subdeadline(selected_task_index, _ap
         
     return selected_node
 
-def get_node_with_least_start_time(selected_task_index, _application,
+def get_node_with_earliest_finish_time(selected_task_index, _application,
                                    edge_list, cloud, _release_time):
     edge_number = len(edge_list)
     finish_time_list = []
