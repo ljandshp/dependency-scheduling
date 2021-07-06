@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-04-16 16:18:15
 LastEditors: loujiong
-LastEditTime: 2021-07-05 21:24:41
+LastEditTime: 2021-07-06 15:29:00
 Description: draw task graph
 Email:  413012592@qq.com
 '''
@@ -117,7 +117,7 @@ def draw_gantt(_application_list,edge_list,cloud,is_annotation = False):
             else:
                 machine = "{0}_{1}".format(_application.task_graph.nodes[i]["selected_node"],_application.task_graph.nodes[i]["cpu"])
             df.append(dict(Task=machine, Start=_application.task_graph.nodes[i]["start_time"], Finish=_application.task_graph.nodes[i]["finish_time"],Resource = "A_"+str(_application_index)))
-    df.sort(key=lambda x: x["Task"], reverse=True)
+    df.sort(key=lambda x: yaxis.index(x["Task"]), reverse=True)
     # 设置task graph的颜色
     all_the_colors = list((x,y,z) for x in range(256) for y in range(256) for z in range(256))
     colors = [f"rgb({random.choice(all_the_colors)})" for x in range(len(_application_list)+1)]
@@ -132,9 +132,13 @@ def draw_gantt(_application_list,edge_list,cloud,is_annotation = False):
         for _application_index,_application in enumerate(_application_list):
             for i in _application.task_graph.nodes():
                 if  _application.task_graph.nodes[i]["selected_node"] != len(edge_list): #i != 0 and i != _application.task_graph.number_of_nodes() and
-                    y_pos = _application.task_graph.nodes[i]["selected_node"]
-                    x_pos = (_application.task_graph.nodes[i]["start_time"]+_application.task_graph.nodes[i]["finish_time"])/2
                     text = "{0}-{1}".format(_application_index,i)
+                    if _application.task_graph.nodes[i]["selected_node"] == len(edge_list):
+                        _machine = "cloud"
+                    else:
+                        _machine = "{0}_{1}".format(_application.task_graph.nodes[i]["selected_node"],_application.task_graph.nodes[i]["cpu"])
+                    y_pos = yaxis.index(_machine)
+                    x_pos = (_application.task_graph.nodes[i]["start_time"]+_application.task_graph.nodes[i]["finish_time"])/2
                     text_font = dict(size=12, color='black')
                     fig['layout']['annotations'] += tuple([dict(x=x_pos, y=y_pos, text=text, textangle=-30, showarrow=False, font=text_font)])
 

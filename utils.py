@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-04-16 13:18:37
 LastEditors: loujiong
-LastEditTime: 2021-07-05 21:42:12
+LastEditTime: 2021-07-06 15:32:08
 Description: utils file
 Email:  413012592@qq.com
 '''
@@ -67,7 +67,9 @@ class Edge():
         task_num = len(finish_task_set)
 
         # sort finished task_set by the start time
+        # print(finish_task_set)
         ids = finish_task_set[:,2].argsort()
+        # print("\n",ids)
         
         self.start_finish = [[] for cpu in range(self.task_concurrent_capacity)]
         for k in ids:
@@ -80,6 +82,9 @@ class Edge():
                 finish_time_list[cpu] = finish_time
             elif finish_time_list[cpu] == start_time:
                 finish_time_list[cpu] = finish_time
+            elif finish_time_list[cpu] > start_time:
+                print("cross_fi_st_error")
+                quit()
         for cpu, f in enumerate(finish_time_list):
             self.start_finish[cpu].append([f, 10000000000000])
             self.start_finish[cpu] = np.array(self.start_finish[cpu])
@@ -232,9 +237,9 @@ class Application():
 
         for u, v in self.task_graph.edges():
             if u == source_node or v == sink_node:
-                self.task_graph.edges[u, v]["e"] = rd(6, 9)
+                self.task_graph.edges[u, v]["e"] = rd(2, 7)
             else:
-                self.task_graph.edges[u, v]["e"] = rd(6, 9)
+                self.task_graph.edges[u, v]["e"] = rd(2, 7)
 
     def generate_node_for_level(self, node_num, level_num):
         node_number_for_level = [[1] for i in range(level_num)]
