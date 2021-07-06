@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-06-03 15:49:12
 LastEditors: loujiong
-LastEditTime: 2021-07-05 16:24:20
+LastEditTime: 2021-07-05 21:42:42
 Description: no re_schedule
 Email:  413012592@qq.com
 '''
@@ -22,17 +22,19 @@ import pqdict
 np.set_printoptions(suppress=True)
 
 def re_scheduling(is_draw=False,
+                      is_annotation = False,
                       application_num=9,
                       application_average_interval=10,
                       edge_number=10,
-                      scheduler = utils.get_node_with_least_start_time):
+                      scheduler = utils.get_node_with_earliest_finish_time,
+                      random_seed = 1.11):
     deadline_alpha = 1.5/7
     # debug
     total_len_unscheduled_tasks_list = []
     
     # random setting
     all_st = time.time()
-    random.seed(1.1)
+    random.seed(random_seed)
 
     # 调度过程已经结束的所有task
     finish_task_set = [np.empty((0,4)) for i in range(edge_number)]
@@ -53,7 +55,7 @@ def re_scheduling(is_draw=False,
     # save task graph figures
     for i in range(application_num):
         print("application_{0} node number:{1} edge number:{2}".format(i, application_list[i].task_graph.number_of_nodes(), application_list[i].task_graph.number_of_edges()))
-        # draw.draw(application_list[i].task_graph, is_save = True, _application_index = i)
+        draw.draw(application_list[i].task_graph, is_save = True, _application_index = i)
 
     # calculate the total/average task weight
     t_sum = 0
@@ -379,7 +381,7 @@ def re_scheduling(is_draw=False,
     print("application task number list:{0}".format([_application.task_graph.number_of_nodes() for _application in application_list]))
     
     if is_draw:
-        draw.draw_gantt(application_list, edge_list, cloud) 
+        draw.draw_gantt(application_list, edge_list, cloud, is_annotation=is_annotation) 
 
 
 
@@ -396,18 +398,24 @@ def re_scheduling(is_draw=False,
     print("data_rate_for_cloud:{0}".format(cloud.data_rate))
         
 if __name__ == '__main__':
-    is_draw = False
-    application_num=100
-    application_average_interval=100
-    edge_number=10
+    is_draw = True
+    is_annotation = True
+    application_num=1
+    application_average_interval=120
+    edge_number=13
+    random_seed = random.random()
     # re_scheduling(is_draw=is_draw,
+    #             is_annotation = is_annotation
     #             application_num=application_num,
     #             application_average_interval=application_average_interval,
     #             edge_number=edge_number,
-    #             scheduler = utils.get_node_with_least_start_time)
+    #             scheduler = utils.get_node_with_earliest_finish_time,
+    #             random_seed = random_seed)
     
     re_scheduling(is_draw=is_draw,
+                is_annotation = is_annotation,
                 application_num=application_num,
                 application_average_interval=application_average_interval,
                 edge_number=edge_number,
-                scheduler = utils.get_node_with_least_cost_constrained_by_subdeadline)
+                scheduler = utils.get_node_with_least_cost_constrained_by_subdeadline,
+                random_seed = random_seed)

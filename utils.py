@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-04-16 13:18:37
 LastEditors: loujiong
-LastEditTime: 2021-07-05 15:54:47
+LastEditTime: 2021-07-05 21:42:12
 Description: utils file
 Email:  413012592@qq.com
 '''
@@ -114,9 +114,9 @@ class Edge():
                 
 # the speed of the cloud is fastest
 class Cloud():
-    def __init__(self, cost_per_mip = 4):
+    def __init__(self, cost_per_mip = 4,data_rate = 15):
         self.process_data_rate = 2
-        self.data_rate = 30
+        self.data_rate = data_rate
         self.cost_per_mip = cost_per_mip
 
 class Application():
@@ -469,7 +469,7 @@ def get_node_with_least_cost_constrained_by_subdeadline(selected_task_index, _ap
         
     return selected_node
 
-def get_node_with_least_start_time(selected_task_index, _application,
+def get_node_with_earliest_finish_time(selected_task_index, _application,
                                    edge_list, cloud, _release_time):
     edge_number = len(edge_list)
     finish_time_list = []
@@ -544,23 +544,29 @@ def check(application_list):
                 node_cpu = "{0}-{1}".format(application.task_graph.nodes()[task_index]["selected_node"],application.task_graph.nodes()[task_index]["cpu"])
                 if node_cpu not in d:
                     d[node_cpu] = pqdict.pqdict()
-                d[node_cpu][(application_index,task_index)] = (start_time,finish_time)
+                d[node_cpu][(application_index,task_index)] = (start_time,finish_time,application_index,task_index)
     for node_cpu in d:
         keys = pqdict.nsmallest(len(d[node_cpu]),d[node_cpu])
         st = -1
         fi = -1
+        _a_i = -1
+        _t_i = -1
         for application_index,task_index in keys:
-            st_time,fi_time = d[node_cpu][(application_index,task_index)]
-            if st_time > fi_time:
-                print("same task fi_time st time error")
-                print(st_time,fi_time)
-                quit()
-            if st_time < fi:
-                print("cross task fi_time st time error")
-                print(fi,st_time)
-                print(node_cpu)
-                quit()
-            st,fi = st_time,fi_time
+            st_time,fi_time,a_i,t_i = d[node_cpu][(application_index,task_index)]
+            if st_time != fi_time:
+                if st_time > fi_time:
+                    print("same task fi_time st time error")
+                    print(st_time,fi_time)
+                    quit()
+                if st_time < fi:
+                    print("cross task fi_time st time error")
+                    print(fi,st_time,fi_time)
+                    print(node_cpu)
+                    print("last application-task: {0}-{1}".format(_a_i,_t_i))
+                    print("current application-task: {0}-{1}".format(application_index,task_index))
+                    quit()
+                st,fi = st_time,fi_time
+                _a_i,_t_i = a_i,t_i
 
 def get_node_by_random(selected_task_index, _application, edge_list, cloud, _release_time):
     return rd(0, len(edge_list))

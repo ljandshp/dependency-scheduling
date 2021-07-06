@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-04-16 16:18:15
 LastEditors: loujiong
-LastEditTime: 2021-07-01 16:39:59
+LastEditTime: 2021-07-05 21:24:41
 Description: draw task graph
 Email:  413012592@qq.com
 '''
@@ -75,9 +75,9 @@ def draw(G, is_save = True, _application_index = 0):
     nx.draw_networkx_nodes(G, pos)
     labels = {i:(i,G.nodes[i]["w"]) for i in G.nodes()}
     edge_labels = {(u,v):(G.edges[u,v]["e"]) for u,v in G.edges()}
-    nx.draw_networkx_labels(G,pos,labels)
+    nx.draw_networkx_labels(G,pos,labels,font_size=8)
     # print(edge_labels)
-    nx.draw_networkx_labels(G,edge_pos,edge_labels)
+    nx.draw_networkx_labels(G,edge_pos,edge_labels,font_size=8)
     ax = plt.gca()
     for e in G.edges:
         ax.annotate("",
@@ -97,7 +97,7 @@ def draw(G, is_save = True, _application_index = 0):
         plt.show()
 
 
-def draw_gantt(_application_list,edge_list,cloud):
+def draw_gantt(_application_list,edge_list,cloud,is_annotation = False):
     pyplt = py.offline.plot
     df = []
     # add data
@@ -125,7 +125,19 @@ def draw_gantt(_application_list,edge_list,cloud):
     fig = ff.create_gantt(df, colors=colors, show_colorbar=True,group_tasks=True,index_col='Resource',showgrid_x=True,showgrid_y=True)
     # 修改x轴
     fig['layout']['xaxis'].update({'type': None})
-    fig.layout['xaxis'].update(range=[-10, 1000])
+    # fig.layout['xaxis'].update(range=[-10, 1000])
+
+    # draw annotations
+    if is_annotation:
+        for _application_index,_application in enumerate(_application_list):
+            for i in _application.task_graph.nodes():
+                if  _application.task_graph.nodes[i]["selected_node"] != len(edge_list): #i != 0 and i != _application.task_graph.number_of_nodes() and
+                    y_pos = _application.task_graph.nodes[i]["selected_node"]
+                    x_pos = (_application.task_graph.nodes[i]["start_time"]+_application.task_graph.nodes[i]["finish_time"])/2
+                    text = "{0}-{1}".format(_application_index,i)
+                    text_font = dict(size=12, color='black')
+                    fig['layout']['annotations'] += tuple([dict(x=x_pos, y=y_pos, text=text, textangle=-30, showarrow=False, font=text_font)])
+
     # 画边框
     fig.update_traces(mode='lines',
                       line_color='black',
