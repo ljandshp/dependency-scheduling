@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-06-03 15:49:12
 LastEditors: loujiong
-LastEditTime: 2021-07-11 14:08:27
+LastEditTime: 2021-07-11 14:51:27
 Description: no re_schedule
 Email:  413012592@qq.com
 '''
@@ -141,7 +141,7 @@ def re_scheduling(is_draw=False,
         #update self.planed_is_task_for_each_time, self.planed_task_for_each_time, update self.is_task_for_each_time, and self.task_for_each_time
         for _edge_index,_edge_node in enumerate(edge_list):
             # print("------------------------{0}------------------------".format(_edge_index))
-            # _edge_node.update_plan_to_actural(_release_time,new_finish_task_set[_edge_index],application_list)
+            _edge_node.update_plan_to_actural(_release_time,new_finish_task_set[_edge_index],application_list)
             _edge_node.generate_plan(_release_time)
             print("planed_start_finish",_edge_node.planed_start_finish)
             print("start_finish",_edge_node.start_finish)
@@ -445,10 +445,10 @@ def re_scheduling(is_draw=False,
     print(time.time()-all_st)
 
 if __name__ == '__main__':
-    is_draw = False
+    is_draw = True
     is_annotation = True
     is_draw_task_graph = False
-    application_num = 1000
+    application_num = 30
     application_average_interval = 120
     edge_number = 13
     random_seed = 1.2
@@ -462,12 +462,31 @@ if __name__ == '__main__':
     #               random_seed=random_seed,
     #               is_draw_task_graph=is_draw_task_graph)
 
+    # re_scheduling(
+    #     is_draw=is_draw,
+    #     is_annotation=is_annotation,
+    #     application_num=application_num,
+    #     application_average_interval=application_average_interval,
+    #     edge_number=edge_number,
+    #     scheduler=utils.get_node_with_least_cost_constrained_by_subdeadline,
+    #     random_seed=random_seed,
+    #     is_draw_task_graph=is_draw_task_graph)
+
+    # re_scheduling(is_draw=is_draw,
+    #               is_annotation=is_annotation,
+    #               application_num=application_num,
+    #               application_average_interval=application_average_interval,
+    #               edge_number=edge_number,
+    #               scheduler=utils.get_node_with_earliest_finish_time_without_cloud,
+    #               random_seed=random_seed,
+    #               is_draw_task_graph=is_draw_task_graph)
+
     re_scheduling(
-        is_draw=is_draw,
-        is_annotation=is_annotation,
-        application_num=application_num,
-        application_average_interval=application_average_interval,
-        edge_number=edge_number,
-        scheduler=utils.get_node_with_least_cost_constrained_by_subdeadline,
-        random_seed=random_seed,
-        is_draw_task_graph=is_draw_task_graph)
+            is_draw=is_draw,
+            is_annotation=is_annotation,
+            application_num=application_num,
+            application_average_interval=application_average_interval,
+            edge_number=edge_number,
+            scheduler=utils.get_node_with_least_cost_constrained_by_subdeadline_without_cloud,
+            random_seed=random_seed,
+            is_draw_task_graph=is_draw_task_graph)
