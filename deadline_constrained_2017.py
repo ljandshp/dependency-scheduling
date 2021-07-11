@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-06-03 15:49:12
 LastEditors: loujiong
-LastEditTime: 2021-07-11 14:00:06
+LastEditTime: 2021-07-11 14:08:27
 Description: no re_schedule
 Email:  413012592@qq.com
 '''
@@ -448,7 +448,7 @@ if __name__ == '__main__':
     is_draw = False
     is_annotation = True
     is_draw_task_graph = False
-    application_num = 3000
+    application_num = 1000
     application_average_interval = 120
     edge_number = 13
     random_seed = 1.2
