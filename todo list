@@ -10,4 +10,7 @@ clear deadline_constrained_2017
 
 
 ------------issues------------
-发现ideal time和deadline之间差别过大，也就是说过分松弛
+发现ideal time和deadline之间差别过大，也就是说过分松弛。
+发现单个task graph 和多个task graph对accept rate的影响微乎其微。  ？？？没有找到原因
+发现earliest finish time的方法确实能提高不少accept rate。
+发现传回来还是会对earliest finish time 影响很大    =》    参考香港城市大学女教授的论文
