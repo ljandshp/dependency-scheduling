@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-04-16 16:18:15
 LastEditors: loujiong
-LastEditTime: 2021-07-06 15:29:00
+LastEditTime: 2021-07-16 20:19:37
 Description: draw task graph
 Email:  413012592@qq.com
 '''
@@ -97,7 +97,7 @@ def draw(G, is_save = True, _application_index = 0):
         plt.show()
 
 
-def draw_gantt(_application_list,edge_list,cloud,is_annotation = False):
+def draw_gantt(_application_list,edge_list,cloud,is_annotation = False, is_only_accept = False):
     pyplt = py.offline.plot
     df = []
     # add data
@@ -111,6 +111,8 @@ def draw_gantt(_application_list,edge_list,cloud,is_annotation = False):
            # 增加dummy task以确保所有的node cpu都在 
            df.append(dict(Task="{0}_{1}".format(_edge_index,_cpu), Start=-10, Finish=-10,Resource = "dummy"))
     for _application_index,_application in enumerate(_application_list):
+        if is_only_accept and not _application.is_accept:
+            continue
         for i in _application.task_graph.nodes():
             if _application.task_graph.nodes[i]["selected_node"] == len(edge_list):
                 machine = "cloud"
@@ -130,6 +132,8 @@ def draw_gantt(_application_list,edge_list,cloud,is_annotation = False):
     # draw annotations
     if is_annotation:
         for _application_index,_application in enumerate(_application_list):
+            if is_only_accept and not _application.is_accept:
+                continue
             for i in _application.task_graph.nodes():
                 if  _application.task_graph.nodes[i]["selected_node"] != len(edge_list): #i != 0 and i != _application.task_graph.number_of_nodes() and
                     text = "{0}-{1}".format(_application_index,i)

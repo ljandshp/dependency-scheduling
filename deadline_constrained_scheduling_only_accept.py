@@ -1,12 +1,11 @@
 '''
 Author: 娄炯
-Date: 2021-06-03 15:49:12
+Date: 2021-07-16 14:40:18
 LastEditors: loujiong
-LastEditTime: 2021-07-16 17:10:17
-Description: no re_schedule
+LastEditTime: 2021-07-16 20:42:29
+Description: only accept task will be added into the start finish list
 Email:  413012592@qq.com
 '''
-
 
 import networkx as nx
 from random import randint as rd
@@ -30,7 +29,7 @@ def re_scheduling(is_draw=False,
                   scheduler=utils.get_node_with_earliest_finish_time,
                   random_seed=1.11,
                   is_draw_task_graph=False,
-                  is_multiple = True):
+                  is_multiple=True):
     deadline_alpha = 1.4/7
     # debug
     total_len_unscheduled_tasks_list = []
@@ -125,7 +124,7 @@ def re_scheduling(is_draw=False,
                 application_list[_ap_index].task_graph.nodes[_ta_index]["is_scheduled"] = 1
                 unscheduled_tasks.pop()
                 _current_task_selected_node = application_list[_ap_index].task_graph.nodes()[_ta_index]["selected_node"]
-                if  _current_task_selected_node < edge_number:
+                if  _current_task_selected_node < edge_number and application_list[_ap_index].is_accept:
                     finish_task_set[_current_task_selected_node] = np.vstack([finish_task_set[_current_task_selected_node],np.array([_ap_index,_ta_index,application_list[_ap_index].task_graph.nodes()[_ta_index]["start_time"],application_list[_ap_index].task_graph.nodes()[_ta_index]["finish_time"]])])
                     new_finish_task_set[_current_task_selected_node] = np.vstack([new_finish_task_set[_current_task_selected_node],np.array([_ap_index,_ta_index,application_list[_ap_index].task_graph.nodes()[_ta_index]["start_time"],application_list[_ap_index].task_graph.nodes()[_ta_index]["finish_time"]])])
             else:
@@ -353,6 +352,12 @@ def re_scheduling(is_draw=False,
                 if (_ap_index,v) in unscheduled_tasks_sorted_by_remain_length:
                     _a, _b, _c = unscheduled_tasks_sorted_by_remain_length[(_ap_index,v)]
                     unscheduled_tasks_sorted_by_remain_length[(_ap_index,v)] = (_a-1, _b, _c)
+
+            if selected_task_index == _current_application.task_graph.number_of_nodes() - 1:
+                print("finish---",_ap_index,selected_task_index,_current_application.task_graph.nodes[selected_task_index]["finish_time"],_current_application.release_time, _current_application.deadline)
+                if _current_application.task_graph.nodes[selected_task_index]["finish_time"]- _current_application.release_time <= _current_application.deadline:
+                    _current_application.is_accept = True
+                print("is_accept",_current_application.is_accept)
             _find_time = time.time()-st
             each_application_time += _find_time
         print("")
@@ -364,16 +369,20 @@ def re_scheduling(is_draw=False,
 
     # 设置 finish_task_set
     # print(sum([len(i) for i in finish_task_set]))
+    new_finish_task_set = [np.empty((0,4)) for i in range(edge_number)]
     while (len(unscheduled_tasks) > 0):
         _ap_index,_ta_index = unscheduled_tasks.top()
         application_list[_ap_index].task_graph.nodes[_ta_index]["is_scheduled"] = 1
         unscheduled_tasks.pop()
-        if application_list[_ap_index].task_graph.nodes()[_ta_index]["selected_node"] < edge_number:
-            finish_task_set[application_list[_ap_index].task_graph.nodes()[_ta_index]["selected_node"]] = np.vstack([finish_task_set[application_list[_ap_index].task_graph.nodes()[_ta_index]["selected_node"]],np.array([_ap_index,_ta_index,application_list[_ap_index].task_graph.nodes()[_ta_index]["start_time"],application_list[_ap_index].task_graph.nodes()[_ta_index]["finish_time"]])])
+        _current_task_selected_node = application_list[_ap_index].task_graph.nodes()[_ta_index]["selected_node"]
+        if _current_task_selected_node < edge_number:
+            finish_task_set[_current_task_selected_node] = np.vstack([finish_task_set[_current_task_selected_node],np.array([_ap_index,_ta_index,application_list[_ap_index].task_graph.nodes()[_ta_index]["start_time"],application_list[_ap_index].task_graph.nodes()[_ta_index]["finish_time"]])])
+            new_finish_task_set[_current_task_selected_node] = np.vstack([new_finish_task_set[_current_task_selected_node],np.array([_ap_index,_ta_index,application_list[_ap_index].task_graph.nodes()[_ta_index]["start_time"],application_list[_ap_index].task_graph.nodes()[_ta_index]["finish_time"]])])
 
     # 生成最终的start_finish，也就是空闲的interval list
     for _edge_index,_edge_node in enumerate(edge_list):
-        _edge_node.update_plan_to_actural(_release_time,finish_task_set[_edge_index],application_list)
+        if is_multiple:
+            _edge_node.update_plan_to_actural(_release_time,new_finish_task_set[_edge_index],application_list)
 
     # output interval_statistical for each edge node
     print()
@@ -390,7 +399,7 @@ def re_scheduling(is_draw=False,
     for _application in application_list:
         # finish the last node
         sink_task_index =  _application.task_graph.number_of_nodes() - 1
-        _application.finish_time = _application.task_graph.nodes[sink_task_index]["finish_time"]
+        _application.finish_time = _application.task_graph.nodes[sink_task_index]["finish_time"] if _application.is_accept else -1
 
     print("execution_time:{0}".format(each_application_time))
     print("interested_time:{0}".format(interested_time))
@@ -400,27 +409,29 @@ def re_scheduling(is_draw=False,
     print([(_ap_index,_application.release_time+_application.deadline) for _ap_index,_application in enumerate(application_list)])
     print([(_ap_index,_application.release_time) for _ap_index,_application in enumerate(application_list)])
     print([(_ap_index,_application.deadline) for _ap_index,_application in enumerate(application_list)])
-    print([(_ap_index,_application.release_time+_application.deadline > _application.finish_time) for _ap_index,_application in enumerate(application_list)])
+    # print([(_ap_index,_application.release_time+_application.deadline >= _application.finish_time) for _ap_index,_application in enumerate(application_list)])
+    print([(_ap_index,_application.is_accept) for _ap_index,_application in enumerate(application_list)])
     print([(_ap_index,(_application.finish_time-_application.release_time)/_application.deadline) for _ap_index,_application in enumerate(application_list)])
 
     # output accept rate and total cost
-    accept_rate = 0
-    for _application in application_list:
-        if _application.finish_time < _application.release_time+_application.deadline:
-            accept_rate += 1
-    print("accept_rate:{0}".format(accept_rate/len(application_list)))
+    print("accept_rate:{0}".format(sum([_application.is_accept for _application in application_list])/len(application_list)))
+    accept_rate = sum([_application.is_accept for _application in application_list])/len(application_list)
+
+    print([_application.is_accept for _application in application_list])
+
     total_cost = 0
     cost_per_mip_list.append(cloud.cost_per_mip)
     for _application in application_list:
-        _cost_application = sum([_application.task_graph.nodes()[_t]["w"]*cost_per_mip_list[_application.task_graph.nodes()[_t]["selected_node"]] for _t in  _application.task_graph.nodes()])
-        total_cost += _cost_application
+        if _application.is_accept:
+            _cost_application = sum([_application.task_graph.nodes()[_t]["w"]*cost_per_mip_list[_application.task_graph.nodes()[_t]["selected_node"]] for _t in  _application.task_graph.nodes()])
+            total_cost += _cost_application
     print("total_cost:{0}".format(total_cost))
-    print("total makespan:{0}".format(sum([_application.finish_time -_application.release_time for _application in application_list])))
+    print("total makespan:{0}".format(sum([_application.finish_time -_application.release_time for _application in application_list if _application.is_accept])))
 
     print("application task number list:{0}".format([_application.task_graph.number_of_nodes() for _application in application_list]))
 
     if is_draw:
-        draw.draw_gantt(application_list, edge_list, cloud, is_annotation=is_annotation)
+        draw.draw_gantt(application_list, edge_list, cloud, is_annotation=is_annotation, is_only_accept = True)
 
     _cost_per_mip_list = []
     _performance_list = []
@@ -449,14 +460,14 @@ def re_scheduling(is_draw=False,
     return(accept_rate/len(application_list),total_cost)
 
 if __name__ == '__main__':
-    is_draw = True
+    is_draw = False
     is_annotation = True
     is_draw_task_graph = False
     application_num = 30
     application_average_interval = 120
     edge_number = 13
     random_seed = 1.2
-    is_multiple = False
+    is_multiple = True
 
     a_list = []
     c_list = []

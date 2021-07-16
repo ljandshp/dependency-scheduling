@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-04-16 13:18:37
 LastEditors: loujiong
-LastEditTime: 2021-07-11 14:48:25
+LastEditTime: 2021-07-16 19:47:19
 Description: utils file
 Email:  413012592@qq.com
 '''
@@ -28,7 +28,6 @@ class Edge():
         self.cost_per_mip = cost_per_mip
 
     def find_actual_earliest_start_time_by_planed(self, start_time, runtime, _release_time):
-        
         min_start_time = 1000000000000000
         selected_cpu = -1
         selected_interval_key = -1
@@ -39,8 +38,9 @@ class Edge():
             is_in_interval = self.planed_start_finish[_cpu][:,1] - np.maximum(start_time,self.planed_start_finish[_cpu][:,0]) >= runtime - 1
             st_time = (1 - is_in_interval)* 1000000000000000 + np.maximum(start_time,self.planed_start_finish[_cpu][:,0])
             interval_key = np.argmin(st_time)
-            if min_start_time > st_time[interval_key]:
-                min_start_time = st_time[interval_key]
+            _st = max(start_time,self.planed_start_finish[_cpu][interval_key][0])
+            if min_start_time > _st:
+                min_start_time = _st
                 selected_interval_key = interval_key
                 selected_cpu = _cpu
         return (min_start_time, selected_cpu, selected_interval_key)
@@ -145,6 +145,7 @@ class Application():
         self.tmax = 0
         self.deadline = 0
         self.application_index = application_index
+        self.is_accept = False
 
     def generate_task_graph_by_random_by_level(self, task_num,level_num=4,jump_num=2):
         edge_num = rd(task_num, min(task_num * task_num, math.ceil(task_num * 1.5)))
@@ -465,6 +466,8 @@ def get_node_with_least_cost_constrained_by_subdeadline(selected_task_index, _ap
     if selected_node < 0:
         selected_node = np.argmin(np.array(finish_time_list))
         print("unsatisfied deadline")
+        if selected_node == edge_number:
+            print("unsatisfied and to the cloud")
         print("selected_task_index:{0},selected_node:{1}".format(selected_task_index,selected_node))
         print("actual_start_time_list:{0}".format(actual_start_time_list))
         print("finish_time_list:{0}".format(finish_time_list))
@@ -602,14 +605,15 @@ def get_node_with_earliest_finish_time_without_cloud(selected_task_index, _appli
 def check(application_list):
     d = dict()
     for application_index,application in enumerate(application_list):
-        for task_index in application.task_graph.nodes():
-            if application.task_graph.nodes()[task_index]["selected_node"] != -1 and application.task_graph.nodes()[task_index]["cpu"] != -1:
-                start_time = application.task_graph.nodes()[task_index]["start_time"]
-                finish_time = application.task_graph.nodes()[task_index]["finish_time"]
-                node_cpu = "{0}-{1}".format(application.task_graph.nodes()[task_index]["selected_node"],application.task_graph.nodes()[task_index]["cpu"])
-                if node_cpu not in d:
-                    d[node_cpu] = pqdict.pqdict()
-                d[node_cpu][(application_index,task_index)] = (start_time,finish_time,application_index,task_index)
+        if application.is_accept:
+            for task_index in application.task_graph.nodes():
+                if application.task_graph.nodes()[task_index]["selected_node"] != -1 and application.task_graph.nodes()[task_index]["cpu"] != -1:
+                    start_time = application.task_graph.nodes()[task_index]["start_time"]
+                    finish_time = application.task_graph.nodes()[task_index]["finish_time"]
+                    node_cpu = "{0}-{1}".format(application.task_graph.nodes()[task_index]["selected_node"],application.task_graph.nodes()[task_index]["cpu"])
+                    if node_cpu not in d:
+                        d[node_cpu] = pqdict.pqdict()
+                    d[node_cpu][(application_index,task_index)] = (start_time,finish_time,application_index,task_index)
     for node_cpu in d:
         keys = pqdict.nsmallest(len(d[node_cpu]),d[node_cpu])
         st = -1
@@ -717,6 +721,8 @@ def get_node_with_least_cost_constrained_by_subdeadline_without_cloud(selected_t
     if selected_node < 0:
         selected_node = np.argmin(np.array(finish_time_list[:-1]))
         print("unsatisfied deadline")
+        if selected_node == edge_number:
+            print("unsatisfied and to the cloud")
         print("selected_task_index:{0},selected_node:{1}".format(selected_task_index,selected_node))
         print("actual_start_time_list:{0}".format(actual_start_time_list))
         print("finish_time_list:{0}".format(finish_time_list))
