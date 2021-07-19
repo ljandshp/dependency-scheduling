@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-07-16 14:40:18
 LastEditors: loujiong
-LastEditTime: 2021-07-16 20:42:29
+LastEditTime: 2021-07-18 21:19:16
 Description: only accept task will be added into the start finish list
 Email:  413012592@qq.com
 '''
@@ -29,8 +29,9 @@ def re_scheduling(is_draw=False,
                   scheduler=utils.get_node_with_earliest_finish_time,
                   random_seed=1.11,
                   is_draw_task_graph=False,
-                  is_multiple=True):
-    deadline_alpha = 1.4/7
+                  is_multiple=True,
+                  deadline_alpha=1.4/7):
+
     # debug
     total_len_unscheduled_tasks_list = []
 
@@ -170,6 +171,11 @@ def re_scheduling(is_draw=False,
         # generate sub_deadline for each task
         sub_deadline_list = utils.get_sub_deadline_list(_application.task_graph,remain_length_list,deadline = _application.deadline,edge_weight=edge_weight,node_weight=node_weight)
         # print(sub_deadline_list)
+
+        # modify deadline
+        # sub_deadline_list = [0]*_application.task_graph.number_of_nodes()
+        # sub_deadline_list[-1] = _application.deadline
+        
         for _t in _application.task_graph.nodes():
             _application.task_graph.nodes()[_t]["sub_deadline"] = sub_deadline_list[_t]
 
@@ -368,7 +374,6 @@ def re_scheduling(is_draw=False,
     # utils.check(application_list)
 
     # 设置 finish_task_set
-    # print(sum([len(i) for i in finish_task_set]))
     new_finish_task_set = [np.empty((0,4)) for i in range(edge_number)]
     while (len(unscheduled_tasks) > 0):
         _ap_index,_ta_index = unscheduled_tasks.top()
@@ -457,10 +462,10 @@ def re_scheduling(is_draw=False,
     print("performance:")
     print(_performance_list)
     print(time.time()-all_st)
-    return(accept_rate/len(application_list),total_cost)
+    return(accept_rate,total_cost)
 
 if __name__ == '__main__':
-    is_draw = False
+    is_draw = True
     is_annotation = True
     is_draw_task_graph = False
     application_num = 30
@@ -468,6 +473,7 @@ if __name__ == '__main__':
     edge_number = 13
     random_seed = 1.2
     is_multiple = True
+    deadline_alpha = 1.4 / 7
 
     a_list = []
     c_list = []
@@ -480,8 +486,10 @@ if __name__ == '__main__':
     #     scheduler=utils.get_node_with_earliest_finish_time,
     #     random_seed=random_seed,
     #     is_draw_task_graph=is_draw_task_graph,
-    #     is_multiple=is_multiple)
+    #     is_multiple=is_multiple,
+    # deadline_alpha=deadline_alpha)
     # a_list.append(_a)
+    
     # c_list.append(_c)
 
     # random_seed = 1.2
@@ -494,7 +502,8 @@ if __name__ == '__main__':
     #     scheduler=utils.get_node_with_least_cost_constrained_by_subdeadline,
     #     random_seed=random_seed,
     #     is_draw_task_graph=is_draw_task_graph,
-    #     is_multiple=is_multiple)
+    #     is_multiple=is_multiple,
+    # deadline_alpha=deadline_alpha)
     # a_list.append(_a)
     # c_list.append(_c)
 
@@ -508,10 +517,11 @@ if __name__ == '__main__':
         scheduler=utils.get_node_with_earliest_finish_time_without_cloud,
         random_seed=random_seed,
         is_draw_task_graph=is_draw_task_graph,
-        is_multiple=is_multiple)
+        is_multiple=is_multiple,
+        deadline_alpha=deadline_alpha)
     a_list.append(_a)
     c_list.append(_c)
-
+    
     random_seed = 1.2
     _a, _c = re_scheduling(
         is_draw=is_draw,
@@ -523,7 +533,8 @@ if __name__ == '__main__':
         get_node_with_least_cost_constrained_by_subdeadline_without_cloud,
         random_seed=random_seed,
         is_draw_task_graph=is_draw_task_graph,
-        is_multiple=is_multiple)
+        is_multiple=is_multiple,
+        deadline_alpha=deadline_alpha)
     a_list.append(_a)
     c_list.append(_c)
 

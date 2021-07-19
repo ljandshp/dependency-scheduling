@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-04-27 10:32:43
 LastEditors: loujiong
-LastEditTime: 2021-04-27 10:46:34
+LastEditTime: 2021-07-17 13:28:39
 Description: some coding helper
 Email:  413012592@qq.com
 '''
@@ -55,4 +55,17 @@ def log(func):
 def run(a, b,c=9):
     print(a+b+c)
 
-run (1,3,c=9)
+if __name__ == '__main__':
+    # run (1,3,c=9)
+
+
+    # bisect
+    # import bisect
+    # a = [1,2,3,4]
+    # bisect.bisect(a,2.4)
+    # bisect.insort(a,2.5)
+    # example 2
+    # data = [('red', 5), ('blue', 1), ('yellow', 8), ('black', 0)]
+    # data.sort(key=lambda r: r[1])
+    # keys = [r[1] for r in data]
+    # print(data[bisect_left(keys, 0)])

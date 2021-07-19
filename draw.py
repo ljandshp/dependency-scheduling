@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-04-16 16:18:15
 LastEditors: loujiong
-LastEditTime: 2021-07-16 20:19:37
+LastEditTime: 2021-07-18 21:20:55
 Description: draw task graph
 Email:  413012592@qq.com
 '''
@@ -33,7 +33,7 @@ def get_layered_pos(G):
             else:
                 pos[i] = [0-negative_pos[length],0-length]
                 negative_pos[length] += 1
-    
+
     edge_info = dict()
     proccessed_edge = set()
     for index in range(len(longest_path) - 1):
@@ -46,9 +46,10 @@ def get_layered_pos(G):
             edge_info[(slope,intercept)] = {}
         edge_info[(slope,intercept)][(u,v)] = (pos[u][1],pos[v][1])
         proccessed_edge.add((u,v))
-    
+
     for u,v in G.edges():
-        edge_pos[(u,v)] = [(pos[u][0]+pos[v][0])/2,(pos[u][1]+pos[v][1])/2]
+        m1 = [pos[u][0]*1/2+pos[v][0]*1/2,pos[u][1]*1/2+pos[v][1]*1/2]
+        edge_pos[(u,v)] = m1
         if (u,v) in proccessed_edge:
             continue
         flag = False
@@ -62,33 +63,60 @@ def get_layered_pos(G):
                 y1,y2 = edge_info[(slope,intercept)][edge1]
                 if (y1>=pos[u][1] and pos[u][1]>y2) or (pos[u][1] >=y1 and y1>pos[v][1]) :
                     flag = True
-                    break  
+                    break
             edge_info[(slope,intercept)][(u,v)] = (pos[u][1],pos[v][1])
         if flag:
             edge_rad[(u,v)] = 0.3
         else:
             edge_rad[(u,v)] = 0
+        c1 = [m1[0]+1/2*edge_rad[(u,v)]*(pos[v][1]-pos[u][1]),m1[1]-1/2*edge_rad[(u,v)]*(pos[v][0]-pos[u][0])]
+        edge_pos[(u,v)] = c1
     return pos,edge_rad,edge_pos
 
-def draw(G, is_save = True, _application_index = 0):
-    pos,edge_rad,edge_pos = get_layered_pos(G)
+
+def draw(G, is_save=True, _application_index=0):
+    pos, edge_rad, edge_pos = get_layered_pos(G)
     nx.draw_networkx_nodes(G, pos)
-    labels = {i:(i,G.nodes[i]["w"]) for i in G.nodes()}
-    edge_labels = {(u,v):(G.edges[u,v]["e"]) for u,v in G.edges()}
-    nx.draw_networkx_labels(G,pos,labels,font_size=8)
+    labels = {i: (i, G.nodes[i]["w"]) for i in G.nodes()}
+    edge_labels = {(u, v): (G.edges[u, v]["e"]) for u, v in G.edges()}
+    nx.draw_networkx_labels(G, pos, labels, font_size=8)
     # print(edge_labels)
-    nx.draw_networkx_labels(G,edge_pos,edge_labels,font_size=8)
+    for e in edge_pos:
+        nx.draw_networkx_labels(G,
+                            {e:edge_pos[e]},
+                            {e:edge_labels[e]},
+                            font_size=8,
+                            font_color="red")
+    # nx.draw_networkx_labels(G,
+    #                         edge_pos,
+    #                         edge_labels,
+    #                         font_size=8,
+    #                         font_color="red")
+    
     ax = plt.gca()
     for e in G.edges:
-        ax.annotate("",
-                    xy=pos[e[0]], xycoords='data',
-                    xytext=pos[e[1]], textcoords='data',
-                    arrowprops=dict(arrowstyle="<-",
-                                    shrinkA=5, shrinkB=5,
-                                    patchA=None, patchB=None,
-                                    connectionstyle="arc3,rad=rrr".replace('rrr',str(edge_rad[(e[0],e[1])])),
-                                    ),
-                    )
+        nx.draw_networkx_edges(
+            G, pos, edgelist = [e],
+            connectionstyle="arc3,rad=rrr".replace(
+                    'rrr', str(edge_rad[(e[0], e[1])])))
+        # nx.draw_networkx_edge_labels(G, pos, edge_labels = {e:edge_labels[e]}, rotate= False,label_pos = 0.5)
+        # ax.annotate(
+        #     "",
+        #     xy=pos[e[0]],
+        #     xycoords='data',
+        #     xytext=pos[e[1]],
+        #     textcoords='data',
+        #     arrowprops=dict(
+        #         arrowstyle="<-",
+        #         shrinkA=5,
+        #         shrinkB=5,
+        #         patchA=None,
+        #         patchB=None,
+        #         connectionstyle="arc3,rad=rrr".replace(
+        #             'rrr', str(edge_rad[(e[0], e[1])])),
+        #     ),
+        # )
+
     plt.axis('equal')
     if is_save:
         plt.savefig('task_graph/task_graph_{0}.png'.format(_application_index))
@@ -107,9 +135,9 @@ def draw_gantt(_application_list,edge_list,cloud,is_annotation = False, is_only_
     df.append(dict(Task="cloud", Start=-10, Finish=-10,Resource = "dummy"))
     for _edge_index,_edge in enumerate(edge_list):
         for _cpu in range(_edge.task_concurrent_capacity):
-           yaxis.append("{0}_{1}".format(_edge_index,_cpu))
-           # 增加dummy task以确保所有的node cpu都在 
-           df.append(dict(Task="{0}_{1}".format(_edge_index,_cpu), Start=-10, Finish=-10,Resource = "dummy"))
+            yaxis.append("{0}_{1}".format(_edge_index,_cpu))
+            # 增加dummy task以确保所有的node cpu都在
+            df.append(dict(Task="{0}_{1}".format(_edge_index,_cpu), Start=-10, Finish=-10,Resource = "dummy"))
     for _application_index,_application in enumerate(_application_list):
         if is_only_accept and not _application.is_accept:
             continue
@@ -145,7 +173,9 @@ def draw_gantt(_application_list,edge_list,cloud,is_annotation = False, is_only_
                     x_pos = (_application.task_graph.nodes[i]["start_time"]+_application.task_graph.nodes[i]["finish_time"])/2
                     text_font = dict(size=12, color='black')
                     fig['layout']['annotations'] += tuple([dict(x=x_pos, y=y_pos, text=text, textangle=-30, showarrow=False, font=text_font)])
-
+    for edge_index,item in enumerate(edge_list):
+        fig['layout']['annotations'] += tuple([dict(x=-150, y=edge_index+1, text="({0},{1})".format(item.cost_per_mip,item.process_data_rate), textangle=0, showarrow=False, font=text_font)])
+    fig['layout']['annotations'] += tuple([dict(x=-150, y=0, text="({0},{1})".format(cloud.cost_per_mip,cloud.process_data_rate), textangle=0, showarrow=False, font=text_font)])
     # 画边框
     fig.update_traces(mode='lines',
                       line_color='black',
