@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-07-16 14:40:18
 LastEditors: loujiong
-LastEditTime: 2021-07-18 21:19:16
+LastEditTime: 2021-07-20 15:30:50
 Description: only accept task will be added into the start finish list
 Email:  413012592@qq.com
 '''
@@ -436,7 +436,7 @@ def re_scheduling(is_draw=False,
     print("application task number list:{0}".format([_application.task_graph.number_of_nodes() for _application in application_list]))
 
     if is_draw:
-        draw.draw_gantt(application_list, edge_list, cloud, is_annotation=is_annotation, is_only_accept = True)
+        draw.draw_gantt(application_list, edge_list, cloud, is_annotation=is_annotation, is_only_accept = True, gantt_name = scheduler.__name__)
 
     _cost_per_mip_list = []
     _performance_list = []

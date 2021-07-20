@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-04-16 16:18:15
 LastEditors: loujiong
-LastEditTime: 2021-07-18 21:20:55
+LastEditTime: 2021-07-20 15:27:19
 Description: draw task graph
 Email:  413012592@qq.com
 '''
@@ -125,7 +125,7 @@ def draw(G, is_save=True, _application_index=0):
         plt.show()
 
 
-def draw_gantt(_application_list,edge_list,cloud,is_annotation = False, is_only_accept = False):
+def draw_gantt(_application_list,edge_list,cloud,is_annotation = False, is_only_accept = False,  gantt_name = "result"):
     pyplt = py.offline.plot
     df = []
     # add data
@@ -180,7 +180,7 @@ def draw_gantt(_application_list,edge_list,cloud,is_annotation = False, is_only_
     fig.update_traces(mode='lines',
                       line_color='black',
                       selector=dict(fill='toself'))
-    pyplt(fig, filename='tmp/1.html')
+    pyplt(fig, filename='tmp/{0}.html'.format(gantt_name))
     return
 
 if __name__ == '__main__':
