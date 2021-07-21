@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-07-16 14:40:18
 LastEditors: loujiong
-LastEditTime: 2021-07-20 15:30:50
+LastEditTime: 2021-07-21 15:39:53
 Description: only accept task will be added into the start finish list
 Email:  413012592@qq.com
 '''
@@ -84,6 +84,17 @@ def re_scheduling(is_draw=False,
                    process_data_rate=process_data_rate_list[i],
                    upload_data_rate=rd(3, 6),cost_per_mip = cost_per_mip_list[i]) for i in range(edge_number)
     ]
+
+    _cost_per_mip_list = []
+    _performance_list = []
+    _cost_per_mip_list.append(("cloud",cloud.cost_per_mip))
+    _performance_list.append(("cloud",cloud.process_data_rate))
+    for _edge_index,_edge_node in enumerate(edge_list):
+        _cost_per_mip_list.append((_edge_index,_edge_node.cost_per_mip))
+        _performance_list.append((_edge_index,_edge_node.process_data_rate))
+    with open("edge_cloud_configuration.txt","w") as f:
+        f.write("_cost_per_mip_list:\n{0} \n".format(_cost_per_mip_list))
+        f.write("_performance_list:\n{0} \n".format(_performance_list))
 
     total_application_weight = 0
     total_deadline = 0
@@ -465,10 +476,10 @@ def re_scheduling(is_draw=False,
     return(accept_rate,total_cost)
 
 if __name__ == '__main__':
-    is_draw = True
+    is_draw = False
     is_annotation = True
-    is_draw_task_graph = False
-    application_num = 30
+    is_draw_task_graph = True
+    application_num = 100
     application_average_interval = 120
     edge_number = 13
     random_seed = 1.2
@@ -521,7 +532,7 @@ if __name__ == '__main__':
         deadline_alpha=deadline_alpha)
     a_list.append(_a)
     c_list.append(_c)
-    
+
     random_seed = 1.2
     _a, _c = re_scheduling(
         is_draw=is_draw,

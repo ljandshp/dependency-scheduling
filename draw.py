@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-04-16 16:18:15
 LastEditors: loujiong
-LastEditTime: 2021-07-20 15:27:19
+LastEditTime: 2021-07-21 16:27:22
 Description: draw task graph
 Email:  413012592@qq.com
 '''
@@ -124,6 +124,64 @@ def draw(G, is_save=True, _application_index=0):
     else:
         plt.show()
 
+def draw2(A, is_save=True, _application_index=0, current_task_index = 0):
+    G = A.task_graph
+    pos, edge_rad, edge_pos = get_layered_pos(G)
+
+    finished_task_list = [i for i in G.nodes() if G.nodes()[i]["is_scheduled_in_this_scheduling"] == 1]
+    nx.draw_networkx_nodes(G, pos,nodelist=finished_task_list)
+    unfinished_task_list = [i for i in G.nodes() if G.nodes()[i]["is_scheduled_in_this_scheduling"] == 0]
+    nx.draw_networkx_nodes(G, pos,nodelist=unfinished_task_list,node_color="grey")
+    current_task_list = [current_task_index]
+    nx.draw_networkx_nodes(G, pos,nodelist=current_task_list,node_color="red")
+
+    
+    labels = {i: (i, G.nodes[i]["w"]) for i in G.nodes()}
+    edge_labels = {(u, v): (G.edges[u, v]["e"]) for u, v in G.edges()}
+    nx.draw_networkx_labels(G, pos, labels, font_size=8)
+    # print(edge_labels)
+    for e in edge_pos:
+        nx.draw_networkx_labels(G,
+                            {e:edge_pos[e]},
+                            {e:edge_labels[e]},
+                            font_size=8,
+                            font_color="red")
+    # nx.draw_networkx_labels(G,
+    #                         edge_pos,
+    #                         edge_labels,
+    #                         font_size=8,
+    #                         font_color="red")
+    
+    ax = plt.gca()
+    for e in G.edges:
+        nx.draw_networkx_edges(
+            G, pos, edgelist = [e],
+            connectionstyle="arc3,rad=rrr".replace(
+                    'rrr', str(edge_rad[(e[0], e[1])])))
+        # nx.draw_networkx_edge_labels(G, pos, edge_labels = {e:edge_labels[e]}, rotate= False,label_pos = 0.5)
+        # ax.annotate(
+        #     "",
+        #     xy=pos[e[0]],
+        #     xycoords='data',
+        #     xytext=pos[e[1]],
+        #     textcoords='data',
+        #     arrowprops=dict(
+        #         arrowstyle="<-",
+        #         shrinkA=5,
+        #         shrinkB=5,
+        #         patchA=None,
+        #         patchB=None,
+        #         connectionstyle="arc3,rad=rrr".replace(
+        #             'rrr', str(edge_rad[(e[0], e[1])])),
+        #     ),
+        # )
+
+    plt.axis('equal')
+    if is_save:
+        plt.savefig('task_graph/task_graph_{0}.png'.format(_application_index))
+        plt.clf()
+    else:
+        plt.show()
 
 def draw_gantt(_application_list,edge_list,cloud,is_annotation = False, is_only_accept = False,  gantt_name = "result"):
     pyplt = py.offline.plot
@@ -149,8 +207,12 @@ def draw_gantt(_application_list,edge_list,cloud,is_annotation = False, is_only_
             df.append(dict(Task=machine, Start=_application.task_graph.nodes[i]["start_time"], Finish=_application.task_graph.nodes[i]["finish_time"],Resource = "A_"+str(_application_index)))
     df.sort(key=lambda x: yaxis.index(x["Task"]), reverse=True)
     # 设置task graph的颜色
-    all_the_colors = list((x,y,z) for x in range(256) for y in range(256) for z in range(256))
-    colors = [f"rgb({random.choice(all_the_colors)})" for x in range(len(_application_list)+1)]
+    all_the_colors = list("rgb({0},{1},{2})".format(x,y,z) for x in range(256) for y in range(256) for z in range(256))
+    colors_list = random.sample(all_the_colors,len(_application_list)+1)
+    colors_list.sort()
+    colors = {"A_{0}".format(i):colors_list[i] for i in range(len(_application_list))}
+    colors["dummy"] = colors_list[-1]
+    
     # 获取gantt图
     fig = ff.create_gantt(df, colors=colors, show_colorbar=True,group_tasks=True,index_col='Resource',showgrid_x=True,showgrid_y=True)
     # 修改x轴
