@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-07-16 14:40:18
 LastEditors: loujiong
-LastEditTime: 2021-07-21 15:39:53
+LastEditTime: 2021-07-21 21:10:23
 Description: only accept task will be added into the start finish list
 Email:  413012592@qq.com
 '''
@@ -181,6 +181,7 @@ def re_scheduling(is_draw=False,
 
         # generate sub_deadline for each task
         sub_deadline_list = utils.get_sub_deadline_list(_application.task_graph,remain_length_list,deadline = _application.deadline,edge_weight=edge_weight,node_weight=node_weight)
+        start_sub_deadline_list = utils.get_start_sub_deadline_list(_application.task_graph,remain_length_list,deadline = _application.deadline)
         # print(sub_deadline_list)
 
         # modify deadline
@@ -189,6 +190,7 @@ def re_scheduling(is_draw=False,
         
         for _t in _application.task_graph.nodes():
             _application.task_graph.nodes()[_t]["sub_deadline"] = sub_deadline_list[_t]
+            _application.task_graph.nodes()[_t]["start_sub_deadline"] = start_sub_deadline_list[_t]
 
         interested_time[1] += time.time() - interested_time_st
 
@@ -478,12 +480,12 @@ def re_scheduling(is_draw=False,
 if __name__ == '__main__':
     is_draw = False
     is_annotation = True
-    is_draw_task_graph = True
-    application_num = 100
+    is_draw_task_graph = False
+    application_num = 3000
     application_average_interval = 120
     edge_number = 13
     random_seed = 1.2
-    is_multiple = True
+    is_multiple = False
     deadline_alpha = 1.4 / 7
 
     a_list = []
@@ -500,7 +502,6 @@ if __name__ == '__main__':
     #     is_multiple=is_multiple,
     # deadline_alpha=deadline_alpha)
     # a_list.append(_a)
-    
     # c_list.append(_c)
 
     # random_seed = 1.2
@@ -542,6 +543,22 @@ if __name__ == '__main__':
         edge_number=edge_number,
         scheduler=utils.
         get_node_with_least_cost_constrained_by_subdeadline_without_cloud,
+        random_seed=random_seed,
+        is_draw_task_graph=is_draw_task_graph,
+        is_multiple=is_multiple,
+        deadline_alpha=deadline_alpha)
+    a_list.append(_a)
+    c_list.append(_c)
+
+    random_seed = 1.2
+    _a, _c = re_scheduling(
+        is_draw=is_draw,
+        is_annotation=is_annotation,
+        application_num=application_num,
+        application_average_interval=application_average_interval,
+        edge_number=edge_number,
+        scheduler=utils.
+        get_node_with_least_cost_constrained_by_start_subdeadline_without_cloud,
         random_seed=random_seed,
         is_draw_task_graph=is_draw_task_graph,
         is_multiple=is_multiple,

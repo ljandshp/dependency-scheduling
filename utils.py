@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-04-16 13:18:37
 LastEditors: loujiong
-LastEditTime: 2021-07-21 15:40:26
+LastEditTime: 2021-07-21 20:23:07
 Description: utils file
 Email:  413012592@qq.com
 '''
@@ -369,9 +369,7 @@ class Application():
 
 def get_remain_length(G,edge_weight=1,node_weight=1):
     remain_length_list = [0] * G.number_of_nodes()
-    for i in range(G.number_of_nodes()):
-        v = G.number_of_nodes() - 1 - i
-        # print("node:{0}".format(v))
+    for v in list(reversed(list(nx.topological_sort(G)))):
         for u, v in G.in_edges(v):
             remain_length_list[u] = max(
                 remain_length_list[u], remain_length_list[v] + G.nodes[u]["w"]*node_weight + G.edges[u,v]["e"]*edge_weight)
@@ -381,6 +379,12 @@ def get_sub_deadline_list(G,remain_length_list,deadline = 10,edge_weight=1,node_
     sub_deadline_list = [0] * G.number_of_nodes()
     for i in range(G.number_of_nodes()):
         sub_deadline_list[i] = deadline*(remain_length_list[0]-remain_length_list[i]+G.nodes[i]["w"]*node_weight)/remain_length_list[0]
+    return sub_deadline_list
+
+def get_start_sub_deadline_list(G,remain_length_list,deadline = 10):
+    sub_deadline_list = [0] * G.number_of_nodes()
+    for i in range(G.number_of_nodes()):
+        sub_deadline_list[i] = deadline*(remain_length_list[0]-remain_length_list[i])/remain_length_list[0]
     return sub_deadline_list
     
 def get_node_with_least_cost_constrained_by_subdeadline(selected_task_index, _application,
@@ -729,6 +733,83 @@ def get_node_with_least_cost_constrained_by_subdeadline_without_cloud(selected_t
         
     return selected_node
 
+def get_node_with_least_cost_constrained_by_start_subdeadline_without_cloud(selected_task_index, _application,
+                                   edge_list, cloud, _release_time):
+    edge_number = len(edge_list)
+    finish_time_list = []
+    
+    actual_start_time_list = []
+    is_in_deadline  = []
+    for _selected_node in range(edge_number):
+        precedence_task_finish_time = []
+        for u, v in _application.task_graph.in_edges(selected_task_index):
+            precedence_task_node = _application.task_graph.nodes[u][
+                "selected_node"]
+            if precedence_task_node == edge_number:
+                # from the cloud
+                precedence_task_finish_time.append(
+                    _application.task_graph.edges[u, v]["e"] *
+                    cloud.data_rate +
+                    max(_application.task_graph.nodes[u]["finish_time"],_release_time))
+            elif precedence_task_node != _selected_node:
+                # not same edge node
+                precedence_task_finish_time.append(
+                    _application.task_graph.edges[u, v]["e"] *
+                    edge_list[precedence_task_node].upload_data_rate +
+                    max(_application.task_graph.nodes[u]["finish_time"],_release_time))
+            else:
+                # same ege node
+                precedence_task_finish_time.append(
+                    max(_application.task_graph.nodes[u]["finish_time"],_release_time))
+
+        # globally earliest start time is _release_time
+        earliest_start_time = _release_time if len(
+            precedence_task_finish_time) == 0 else max(
+                precedence_task_finish_time)
+
+        # run time
+        estimated_runtime = _application.task_graph.nodes[selected_task_index][
+            "w"] * edge_list[_selected_node].process_data_rate
+
+        # actual start time and _cpu
+        actual_start_time, _, _ = edge_list[_selected_node].find_actual_earliest_start_time_by_planed(earliest_start_time, estimated_runtime,_release_time)
+
+        # set start time and node for each task
+        _selected_node_finish_time = actual_start_time + estimated_runtime
+        finish_time_list.append(_selected_node_finish_time)
+        actual_start_time_list.append(actual_start_time)
+
+        _is_in_deadline = True
+        for u,v in _application.task_graph.out_edges(selected_task_index):
+            if _selected_node_finish_time + _application.task_graph.edges[u,v]["e"]*edge_list[_selected_node].upload_data_rate > _application.task_graph.nodes()[v]["start_sub_deadline"]+_application.release_time:
+                _is_in_deadline = False
+        is_in_deadline.append(_is_in_deadline)
+
+    cost_per_mip_list = [i.cost_per_mip for i in edge_list]
+    selected_node = -1
+    min_cost = 10000
+    ft = 100000000000
+    for i in range(edge_number):
+        if cost_per_mip_list[i] < min_cost and is_in_deadline[i]:
+            selected_node = i
+            min_cost = cost_per_mip_list[i]
+            ft = finish_time_list[i]
+        if cost_per_mip_list[i] == min_cost and is_in_deadline[i] and finish_time_list[i] < ft:
+            selected_node = i
+            min_cost = cost_per_mip_list[i]
+            ft = finish_time_list[i]
+
+    # if no node satisfy the sub_deadline
+    if selected_node < 0:
+        selected_node = np.argmin(np.array(finish_time_list[:-1]))
+        print("unsatisfied deadline")
+        if selected_node == edge_number:
+            print("unsatisfied and to the cloud")
+        print("selected_task_index:{0},selected_node:{1}".format(selected_task_index,selected_node))
+        print("actual_start_time_list:{0}".format(actual_start_time_list))
+        print("finish_time_list:{0}".format(finish_time_list))
+        
+    return selected_node
     
 def get_node_by_random(selected_task_index, _application, edge_list, cloud, _release_time):
     return rd(0, len(edge_list))
