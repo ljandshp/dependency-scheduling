@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-04-16 13:18:37
 LastEditors: loujiong
-LastEditTime: 2021-07-21 20:23:07
+LastEditTime: 2021-07-22 17:22:57
 Description: utils file
 Email:  413012592@qq.com
 '''
@@ -603,8 +603,8 @@ def get_node_with_earliest_finish_time_without_cloud(selected_task_index, _appli
         finish_time_list.append(_selected_node_finish_time)
     finish_time_list.append(cloud_estimated_finish_time)
     selected_node = np.argmin(np.array(finish_time_list[:-1]))
-
-    return selected_node
+    is_in_deadline = False
+    return is_in_deadline,selected_node
     
 def check(application_list):
     d = dict()
@@ -730,8 +730,9 @@ def get_node_with_least_cost_constrained_by_subdeadline_without_cloud(selected_t
         print("selected_task_index:{0},selected_node:{1}".format(selected_task_index,selected_node))
         print("actual_start_time_list:{0}".format(actual_start_time_list))
         print("finish_time_list:{0}".format(finish_time_list))
-        
-    return selected_node
+
+    is_in_deadline = selected_node >= 0    
+    return is_in_deadline,selected_node
 
 def get_node_with_least_cost_constrained_by_start_subdeadline_without_cloud(selected_task_index, _application,
                                    edge_list, cloud, _release_time):
@@ -785,6 +786,7 @@ def get_node_with_least_cost_constrained_by_start_subdeadline_without_cloud(sele
                 _is_in_deadline = False
         is_in_deadline.append(_is_in_deadline)
 
+    print("is_in_deadline:{0}".format(is_in_deadline))
     cost_per_mip_list = [i.cost_per_mip for i in edge_list]
     selected_node = -1
     min_cost = 10000
@@ -808,8 +810,9 @@ def get_node_with_least_cost_constrained_by_start_subdeadline_without_cloud(sele
         print("selected_task_index:{0},selected_node:{1}".format(selected_task_index,selected_node))
         print("actual_start_time_list:{0}".format(actual_start_time_list))
         print("finish_time_list:{0}".format(finish_time_list))
-        
-    return selected_node
+
+    is_in_deadline =  selected_node >= 0  
+    return is_in_deadline,selected_node
     
 def get_node_by_random(selected_task_index, _application, edge_list, cloud, _release_time):
     return rd(0, len(edge_list))
