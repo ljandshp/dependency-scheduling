@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-07-16 14:40:18
 LastEditors: loujiong
-LastEditTime: 2021-07-21 16:25:16
+LastEditTime: 2021-07-23 11:43:55
 Description: only accept task will be added into the start finish list
 Email:  413012592@qq.com
 '''
@@ -181,6 +181,7 @@ def re_scheduling(is_draw=False,
 
         # generate sub_deadline for each task
         sub_deadline_list = utils.get_sub_deadline_list(_application.task_graph,remain_length_list,deadline = _application.deadline,edge_weight=edge_weight,node_weight=node_weight)
+        start_sub_deadline_list = utils.get_start_sub_deadline_list(_application.task_graph,remain_length_list,deadline = _application.deadline)
         # print(sub_deadline_list)
 
         # modify deadline
@@ -189,6 +190,7 @@ def re_scheduling(is_draw=False,
         
         for _t in _application.task_graph.nodes():
             _application.task_graph.nodes()[_t]["sub_deadline"] = sub_deadline_list[_t]
+            _application.task_graph.nodes()[_t]["start_sub_deadline"] = start_sub_deadline_list[_t]
 
         interested_time[1] += time.time() - interested_time_st
 
@@ -204,6 +206,7 @@ def re_scheduling(is_draw=False,
                         can_be_scheduled_label += 1
                 # unscheduled_tasks_sorted_by_remain_length[(_ap_index,_ta_index)] = (can_be_scheduled_label,application_list[_ap_index].dynamic_longest_remain_length,0-application_list[_ap_index].task_graph.nodes()[_ta_index]["current_remain_length"])
                 unscheduled_tasks_sorted_by_remain_length[(_ap_index,_ta_index)] = (can_be_scheduled_label,application_list[_ap_index].deadline+application_list[_ap_index].release_time,0-application_list[_ap_index].task_graph.nodes()[_ta_index]["current_remain_length"])
+                # unscheduled_tasks_sorted_by_remain_length[(_ap_index,_ta_index)] = (can_be_scheduled_label,application_list[_ap_index].deadline+application_list[_ap_index].release_time,0)
                 application_list[_ap_index].task_graph.nodes()[_ta_index]["is_scheduled_in_this_scheduling"] = 0
 
         #just for record
@@ -215,7 +218,7 @@ def re_scheduling(is_draw=False,
             # select task with the least remain length
             _ap_index, selected_task_index = unscheduled_tasks_sorted_by_remain_length.top()
 
-            
+
             _can_be_scheduled_label, application_level_length, task_level_length = unscheduled_tasks_sorted_by_remain_length[(_ap_index, selected_task_index)]
             unscheduled_tasks_sorted_by_remain_length.pop()
 
@@ -224,8 +227,7 @@ def re_scheduling(is_draw=False,
 
             print()
             print("application index:{0},task index:{1}, _can_be_scheduled_label:{2}, release_time:{3}, pre_set_deadline:{4}, sub_deadline:{5}".format(_ap_index, selected_task_index,_can_be_scheduled_label,_current_application.release_time,_current_application.deadline, _current_application.task_graph.nodes[selected_task_index]["sub_deadline"]))
-
-
+            print("absolute_deadline:{0}, absolute_sub_deadline:{1}".format(_current_application.release_time+_current_application.deadline,_current_application.release_time+_current_application.task_graph.nodes[selected_task_index]["sub_deadline"]))
 
             interested_time_st = time.time()
             if selected_task_index == 0 or selected_task_index == _current_application.task_graph.number_of_nodes(
@@ -234,12 +236,14 @@ def re_scheduling(is_draw=False,
                 selected_node = _current_application.release_node
             else:
                 # selecting node based on the scheduler
-                selected_node = scheduler(
+                is_in_deadline,selected_node = scheduler(
                     selected_task_index, _current_application, edge_list, cloud, _release_time)
             interested_time[2] += time.time() - interested_time_st
 
 
             print("selected_node:{0}".format(selected_node))
+            print("selected_node_upload_data_rate:{0}".format(edge_list[selected_node].upload_data_rate))
+            print("remain_length:{0}".format(_current_application.task_graph.nodes()[selected_task_index]["current_remain_length"]))
             if selected_node == edge_number:
                 # schedule to the cloud
 
@@ -324,10 +328,9 @@ def re_scheduling(is_draw=False,
                         earliest_start_time, estimated_runtime,_release_time)
                 print("application release time:{0}".format(_current_application.release_time))
                 print("actual_start_time:{0}".format(actual_start_time))
+                print("actual_finish_time:{0}".format(actual_start_time+estimated_runtime))
                 print(edge_list[selected_node].planed_start_finish)
-                
-                draw.draw2(application_list[_ap_index], is_save = False, _application_index = i, current_task_index = selected_task_index)
-                
+
                 if actual_start_time< _release_time:
                     print(actual_start_time,_release_time,"error")
                     quit()
@@ -368,10 +371,33 @@ def re_scheduling(is_draw=False,
             #             _a, _b, _c = unscheduled_tasks_sorted_by_remain_length[(_ap_index, _t)]
             #             unscheduled_tasks_sorted_by_remain_length[(_ap_index,_t)] = (_a, _longest_remain_length, _c)
 
+            # update deadline     remain_length_list   node_weight
+            if selected_task_index != 0 and selected_task_index != _current_application.task_graph.number_of_nodes()-1:
+                _finished_update_node_list = set()
+                _update_node_list = [selected_task_index]
+                if is_in_deadline:
+                    while(len(_update_node_list) > 0):
+                        _update_node_index = _update_node_list.pop(0)
+                        for u,v in application_list[_ap_index].task_graph.out_edges(_update_node_index):
+                            if v not in _finished_update_node_list and v != _current_application.task_graph.number_of_nodes()-1:
+                                _update_sub_start_deadline = (_current_application.release_time+_current_application.deadline-_current_application.task_graph.nodes[selected_task_index]["finish_time"])*(remain_length_list[selected_task_index]-node_weight*_current_application.task_graph.nodes()[selected_task_index]["w"]-remain_length_list[v])/(remain_length_list[selected_task_index]-node_weight*_current_application.task_graph.nodes()[selected_task_index]["w"]) + _current_application.task_graph.nodes[selected_task_index]["finish_time"]-_current_application.release_time
+                                print(v,"start_sub_deadline",_current_application.task_graph.nodes()[v]["start_sub_deadline"])
+                                print(v,_update_sub_start_deadline)
+                                _current_application.task_graph.nodes()[v]["start_sub_deadline"] = min(_current_application.task_graph.nodes()[v]["start_sub_deadline"],_update_sub_start_deadline)
+                                print(v,"update_start_sub_deadline",_current_application.task_graph.nodes()[v]["start_sub_deadline"])
+
+
+                                _finished_update_node_list.add(v)
+                                _update_node_list.append(v)
+                                _update_node_list.append(v)
+            
             # update can be scheduled label for other
             for u, v in application_list[_ap_index].task_graph.out_edges(selected_task_index):
                 if (_ap_index,v) in unscheduled_tasks_sorted_by_remain_length:
                     _a, _b, _c = unscheduled_tasks_sorted_by_remain_length[(_ap_index,v)]
+                    # _remain_time = _current_application.deadline+_current_application.release_time-_current_application.task_graph.nodes[selected_task_index]["finish_time"] + 0.0001
+                    # _c = min(_c,0-(application_list[_ap_index].task_graph.nodes[v]["current_remain_length"]+ _current_application.task_graph.edges[u,v]["e"]*edge_list[selected_node].upload_data_rate)/_remain_time)
+                    _c = min(_c,0-(application_list[_ap_index].task_graph.nodes[v]["current_remain_length"]+_current_application.task_graph.nodes[selected_task_index]["finish_time"]+ _current_application.task_graph.edges[u,v]["e"]*edge_list[selected_node].upload_data_rate))
                     unscheduled_tasks_sorted_by_remain_length[(_ap_index,v)] = (_a-1, _b, _c)
 
             if selected_task_index == _current_application.task_graph.number_of_nodes() - 1:
@@ -419,7 +445,7 @@ def re_scheduling(is_draw=False,
     for _application in application_list:
         # finish the last node
         sink_task_index =  _application.task_graph.number_of_nodes() - 1
-        _application.finish_time = _application.task_graph.nodes[sink_task_index]["finish_time"] if _application.is_accept else -1
+        _application.finish_time = _application.task_graph.nodes[sink_task_index]["finish_time"]# if _application.is_accept else -1
 
     print("execution_time:{0}".format(each_application_time))
     print("interested_time:{0}".format(interested_time))
@@ -483,12 +509,12 @@ if __name__ == '__main__':
     is_draw = False
     is_annotation = True
     is_draw_task_graph = False
-    application_num = 100
+    application_num = 30
     application_average_interval = 120
     edge_number = 13
     random_seed = 1.2
     is_multiple = True
-    deadline_alpha = 1.4 / 7
+    deadline_alpha = 1 / 5
 
     a_list = []
     c_list = []
@@ -504,7 +530,6 @@ if __name__ == '__main__':
     #     is_multiple=is_multiple,
     # deadline_alpha=deadline_alpha)
     # a_list.append(_a)
-    
     # c_list.append(_c)
 
     # random_seed = 1.2
@@ -546,6 +571,22 @@ if __name__ == '__main__':
         edge_number=edge_number,
         scheduler=utils.
         get_node_with_least_cost_constrained_by_subdeadline_without_cloud,
+        random_seed=random_seed,
+        is_draw_task_graph=is_draw_task_graph,
+        is_multiple=is_multiple,
+        deadline_alpha=deadline_alpha)
+    a_list.append(_a)
+    c_list.append(_c)
+
+    random_seed = 1.2
+    _a, _c = re_scheduling(
+        is_draw=is_draw,
+        is_annotation=is_annotation,
+        application_num=application_num,
+        application_average_interval=application_average_interval,
+        edge_number=edge_number,
+        scheduler=utils.
+        get_node_with_least_cost_constrained_by_start_subdeadline_without_cloud,
         random_seed=random_seed,
         is_draw_task_graph=is_draw_task_graph,
         is_multiple=is_multiple,

@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-07-16 14:40:18
 LastEditors: loujiong
-LastEditTime: 2021-07-23 01:08:36
+LastEditTime: 2021-07-23 11:43:09
 Description: only accept task will be added into the start finish list
 Email:  413012592@qq.com
 '''
@@ -205,8 +205,8 @@ def re_scheduling(is_draw=False,
                     if application_list[_ap_index].task_graph.nodes[u]["is_scheduled"] == 0:
                         can_be_scheduled_label += 1
                 # unscheduled_tasks_sorted_by_remain_length[(_ap_index,_ta_index)] = (can_be_scheduled_label,application_list[_ap_index].dynamic_longest_remain_length,0-application_list[_ap_index].task_graph.nodes()[_ta_index]["current_remain_length"])
-                # unscheduled_tasks_sorted_by_remain_length[(_ap_index,_ta_index)] = (can_be_scheduled_label,application_list[_ap_index].deadline+application_list[_ap_index].release_time,0-application_list[_ap_index].task_graph.nodes()[_ta_index]["current_remain_length"])
-                unscheduled_tasks_sorted_by_remain_length[(_ap_index,_ta_index)] = (can_be_scheduled_label,application_list[_ap_index].deadline+application_list[_ap_index].release_time,0)
+                unscheduled_tasks_sorted_by_remain_length[(_ap_index,_ta_index)] = (can_be_scheduled_label,application_list[_ap_index].deadline+application_list[_ap_index].release_time,0-application_list[_ap_index].task_graph.nodes()[_ta_index]["current_remain_length"])
+                # unscheduled_tasks_sorted_by_remain_length[(_ap_index,_ta_index)] = (can_be_scheduled_label,application_list[_ap_index].deadline+application_list[_ap_index].release_time,0)
                 application_list[_ap_index].task_graph.nodes()[_ta_index]["is_scheduled_in_this_scheduling"] = 0
 
         #just for record
@@ -397,7 +397,7 @@ def re_scheduling(is_draw=False,
                     _a, _b, _c = unscheduled_tasks_sorted_by_remain_length[(_ap_index,v)]
                     # _remain_time = _current_application.deadline+_current_application.release_time-_current_application.task_graph.nodes[selected_task_index]["finish_time"] + 0.0001
                     # _c = min(_c,0-(application_list[_ap_index].task_graph.nodes[v]["current_remain_length"]+ _current_application.task_graph.edges[u,v]["e"]*edge_list[selected_node].upload_data_rate)/_remain_time)
-                    # _c = min(_c,0-(application_list[_ap_index].task_graph.nodes[v]["current_remain_length"]+_current_application.task_graph.nodes[selected_task_index]["finish_time"]+ _current_application.task_graph.edges[u,v]["e"]*edge_list[selected_node].upload_data_rate))
+                    _c = min(_c,0-(application_list[_ap_index].task_graph.nodes[v]["current_remain_length"]+_current_application.task_graph.nodes[selected_task_index]["finish_time"]+ _current_application.task_graph.edges[u,v]["e"]*edge_list[selected_node].upload_data_rate))
                     unscheduled_tasks_sorted_by_remain_length[(_ap_index,v)] = (_a-1, _b, _c)
 
             if selected_task_index == _current_application.task_graph.number_of_nodes() - 1:
@@ -445,7 +445,7 @@ def re_scheduling(is_draw=False,
     for _application in application_list:
         # finish the last node
         sink_task_index =  _application.task_graph.number_of_nodes() - 1
-        _application.finish_time = _application.task_graph.nodes[sink_task_index]["finish_time"] if _application.is_accept else -1
+        _application.finish_time = _application.task_graph.nodes[sink_task_index]["finish_time"]# if _application.is_accept else -1
 
     print("execution_time:{0}".format(each_application_time))
     print("interested_time:{0}".format(interested_time))
@@ -509,12 +509,12 @@ if __name__ == '__main__':
     is_draw = False
     is_annotation = True
     is_draw_task_graph = False
-    application_num = 1000
+    application_num = 30
     application_average_interval = 120
     edge_number = 13
     random_seed = 1.2
     is_multiple = True
-    deadline_alpha = 1.6 / 7
+    deadline_alpha = 1 / 5
 
     a_list = []
     c_list = []
