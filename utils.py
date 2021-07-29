@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-04-16 13:18:37
 LastEditors: loujiong
-LastEditTime: 2021-07-22 17:22:57
+LastEditTime: 2021-07-25 17:40:11
 Description: utils file
 Email:  413012592@qq.com
 '''
@@ -241,7 +241,7 @@ class Application():
 
         for u, v in self.task_graph.edges():
             if u == source_node or v == sink_node:
-                self.task_graph.edges[u, v]["e"] = rd(2, 7)
+                self.task_graph.edges[u, v]["e"] = 0 #rd(2, 7)
             else:
                 self.task_graph.edges[u, v]["e"] = rd(2, 7)
 
@@ -721,6 +721,7 @@ def get_node_with_least_cost_constrained_by_subdeadline_without_cloud(selected_t
             min_cost = cost_per_mip_list[i]
             ft = finish_time_list[i]
 
+    is_in_deadline = selected_node >= 0 
     # if no node satisfy the sub_deadline
     if selected_node < 0:
         selected_node = np.argmin(np.array(finish_time_list[:-1]))
@@ -731,7 +732,7 @@ def get_node_with_least_cost_constrained_by_subdeadline_without_cloud(selected_t
         print("actual_start_time_list:{0}".format(actual_start_time_list))
         print("finish_time_list:{0}".format(finish_time_list))
 
-    is_in_deadline = selected_node >= 0    
+      
     return is_in_deadline,selected_node
 
 def get_node_with_least_cost_constrained_by_start_subdeadline_without_cloud(selected_task_index, _application,
@@ -801,9 +802,10 @@ def get_node_with_least_cost_constrained_by_start_subdeadline_without_cloud(sele
             min_cost = cost_per_mip_list[i]
             ft = finish_time_list[i]
 
+    is_in_deadline =  selected_node >= 0 
     # if no node satisfy the sub_deadline
     if selected_node < 0:
-        selected_node = np.argmin(np.array(finish_time_list[:-1]))
+        selected_node = np.argmin(np.array(finish_time_list))
         print("unsatisfied deadline")
         if selected_node == edge_number:
             print("unsatisfied and to the cloud")
@@ -811,7 +813,7 @@ def get_node_with_least_cost_constrained_by_start_subdeadline_without_cloud(sele
         print("actual_start_time_list:{0}".format(actual_start_time_list))
         print("finish_time_list:{0}".format(finish_time_list))
 
-    is_in_deadline =  selected_node >= 0  
+     
     return is_in_deadline,selected_node
     
 def get_node_by_random(selected_task_index, _application, edge_list, cloud, _release_time):

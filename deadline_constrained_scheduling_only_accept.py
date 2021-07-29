@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-07-16 14:40:18
 LastEditors: loujiong
-LastEditTime: 2021-07-23 11:43:09
+LastEditTime: 2021-07-25 17:48:30
 Description: only accept task will be added into the start finish list
 Email:  413012592@qq.com
 '''
@@ -205,8 +205,8 @@ def re_scheduling(is_draw=False,
                     if application_list[_ap_index].task_graph.nodes[u]["is_scheduled"] == 0:
                         can_be_scheduled_label += 1
                 # unscheduled_tasks_sorted_by_remain_length[(_ap_index,_ta_index)] = (can_be_scheduled_label,application_list[_ap_index].dynamic_longest_remain_length,0-application_list[_ap_index].task_graph.nodes()[_ta_index]["current_remain_length"])
-                unscheduled_tasks_sorted_by_remain_length[(_ap_index,_ta_index)] = (can_be_scheduled_label,application_list[_ap_index].deadline+application_list[_ap_index].release_time,0-application_list[_ap_index].task_graph.nodes()[_ta_index]["current_remain_length"])
-                # unscheduled_tasks_sorted_by_remain_length[(_ap_index,_ta_index)] = (can_be_scheduled_label,application_list[_ap_index].deadline+application_list[_ap_index].release_time,0)
+                # unscheduled_tasks_sorted_by_remain_length[(_ap_index,_ta_index)] = (can_be_scheduled_label,application_list[_ap_index].deadline+application_list[_ap_index].release_time,0-application_list[_ap_index].task_graph.nodes()[_ta_index]["current_remain_length"])
+                unscheduled_tasks_sorted_by_remain_length[(_ap_index,_ta_index)] = (can_be_scheduled_label,application_list[_ap_index].deadline+application_list[_ap_index].release_time,0)
                 application_list[_ap_index].task_graph.nodes()[_ta_index]["is_scheduled_in_this_scheduling"] = 0
 
         #just for record
@@ -222,6 +222,7 @@ def re_scheduling(is_draw=False,
             _can_be_scheduled_label, application_level_length, task_level_length = unscheduled_tasks_sorted_by_remain_length[(_ap_index, selected_task_index)]
             unscheduled_tasks_sorted_by_remain_length.pop()
 
+            print("task_level_length:{0}".format(task_level_length))
 
             _current_application = application_list[_ap_index]
 
@@ -372,7 +373,9 @@ def re_scheduling(is_draw=False,
             #             unscheduled_tasks_sorted_by_remain_length[(_ap_index,_t)] = (_a, _longest_remain_length, _c)
 
             # update deadline     remain_length_list   node_weight
-            if selected_task_index != 0 and selected_task_index != _current_application.task_graph.number_of_nodes()-1:
+            if selected_task_index == 0:
+                is_in_deadline = True
+            if selected_task_index != _current_application.task_graph.number_of_nodes()-1:
                 _finished_update_node_list = set()
                 _update_node_list = [selected_task_index]
                 if is_in_deadline:
@@ -509,7 +512,7 @@ if __name__ == '__main__':
     is_draw = False
     is_annotation = True
     is_draw_task_graph = False
-    application_num = 30
+    application_num = 1000
     application_average_interval = 120
     edge_number = 13
     random_seed = 1.2
@@ -547,36 +550,36 @@ if __name__ == '__main__':
     # a_list.append(_a)
     # c_list.append(_c)
 
-    random_seed = 1.2
-    _a, _c = re_scheduling(
-        is_draw=is_draw,
-        is_annotation=is_annotation,
-        application_num=application_num,
-        application_average_interval=application_average_interval,
-        edge_number=edge_number,
-        scheduler=utils.get_node_with_earliest_finish_time_without_cloud,
-        random_seed=random_seed,
-        is_draw_task_graph=is_draw_task_graph,
-        is_multiple=is_multiple,
-        deadline_alpha=deadline_alpha)
-    a_list.append(_a)
-    c_list.append(_c)
+    # random_seed = 1.2
+    # _a, _c = re_scheduling(
+    #     is_draw=is_draw,
+    #     is_annotation=is_annotation,
+    #     application_num=application_num,
+    #     application_average_interval=application_average_interval,
+    #     edge_number=edge_number,
+    #     scheduler=utils.get_node_with_earliest_finish_time_without_cloud,
+    #     random_seed=random_seed,
+    #     is_draw_task_graph=is_draw_task_graph,
+    #     is_multiple=is_multiple,
+    #     deadline_alpha=deadline_alpha)
+    # a_list.append(_a)
+    # c_list.append(_c)
 
-    random_seed = 1.2
-    _a, _c = re_scheduling(
-        is_draw=is_draw,
-        is_annotation=is_annotation,
-        application_num=application_num,
-        application_average_interval=application_average_interval,
-        edge_number=edge_number,
-        scheduler=utils.
-        get_node_with_least_cost_constrained_by_subdeadline_without_cloud,
-        random_seed=random_seed,
-        is_draw_task_graph=is_draw_task_graph,
-        is_multiple=is_multiple,
-        deadline_alpha=deadline_alpha)
-    a_list.append(_a)
-    c_list.append(_c)
+    # random_seed = 1.2
+    # _a, _c = re_scheduling(
+    #     is_draw=is_draw,
+    #     is_annotation=is_annotation,
+    #     application_num=application_num,
+    #     application_average_interval=application_average_interval,
+    #     edge_number=edge_number,
+    #     scheduler=utils.
+    #     get_node_with_least_cost_constrained_by_subdeadline_without_cloud,
+    #     random_seed=random_seed,
+    #     is_draw_task_graph=is_draw_task_graph,
+    #     is_multiple=is_multiple,
+    #     deadline_alpha=deadline_alpha)
+    # a_list.append(_a)
+    # c_list.append(_c)
 
     random_seed = 1.2
     _a, _c = re_scheduling(
