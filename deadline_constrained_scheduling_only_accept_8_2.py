@@ -10,16 +10,13 @@ Email:  413012592@qq.com
 import networkx as nx
 from random import randint as rd
 import matplotlib.pyplot as plt
-import utils
+import utils_backup2 as utils
 import draw
 import random
 import time
 import math
 import numpy as np
 import pqdict
-import Edge
-import Application
-import Cloud
 
 np.set_printoptions(suppress=True)
 
@@ -70,10 +67,6 @@ def resize_deadline(start_sub_deadline_list,sub_deadline_list,_application,edge_
     
     return resized_start_sub_deadline_list
     
-
-
-
-
 def re_scheduling(is_draw=False,
                   is_annotation=False,
                   application_num=9,
@@ -104,7 +97,7 @@ def re_scheduling(is_draw=False,
         release_time_list.append(release_time)
         release_time += math.ceil(random.expovariate(1 / application_average_interval))
     application_list = [
-        Application.Application(release_time=release_time_list[i],
+        utils.Application(release_time=release_time_list[i],
                           task_num=rd(10, 20),
                           release_node=rd(0, edge_number - 1),application_index = i)
         for i in range(application_num)
@@ -131,9 +124,9 @@ def re_scheduling(is_draw=False,
 
 
     # initiate edges and cloud
-    cloud = Cloud.Cloud(cost_per_mip = 30, data_rate = 15)
+    cloud = utils.Cloud(cost_per_mip = 30, data_rate = 15)
     edge_list = [
-        Edge.Edge(task_concurrent_capacity=1,
+        utils.Edge(task_concurrent_capacity=1,
                    process_data_rate=process_data_rate_list[i],
                    upload_data_rate=rd(3, 6),cost_per_mip = cost_per_mip_list[i]) for i in range(edge_number)
     ]
@@ -175,8 +168,6 @@ def re_scheduling(is_draw=False,
 
     unscheduled_tasks = pqdict.pqdict()
     remain_length_list = []
-
-
 
     # schedule each application
     for _release_index,_release_time in enumerate(release_time_list):
@@ -412,7 +403,6 @@ def re_scheduling(is_draw=False,
                 _current_application.task_graph.nodes[selected_task_index]["finish_time"] = actual_start_time + estimated_runtime
 
 
-
             application_list[_ap_index].task_graph.nodes()[selected_task_index]["is_scheduled_in_this_scheduling"] = 1
 
             # unscheduled_tasks_sorted_by_remain_length can update for each time
@@ -597,13 +587,13 @@ if __name__ == '__main__':
     is_draw_task_graph = False
     application_num = 1000
     application_average_interval = 120
-    edge_number = 13
+    edge_number = 20
     random_seed = 1.2
     is_multiple = True
-    deadline_alpha = 1 / 5
+    deadline_alpha = 0.25
 
-    for application_average_interval in range(100,300,30):
-        exp_num = 10
+    for application_average_interval in range(80,300,10):
+        exp_num = 1
         a_list = [0]
         c_list = [0]
         for _exp_num in range(exp_num):

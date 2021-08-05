@@ -233,7 +233,7 @@ class Application():
 
         # add weight
         for i in range(1, task_num + 1):
-            self.task_graph.nodes[i]["w"] = rd(10, 15)
+            self.task_graph.nodes[i]["w"] = rd(3, 20) #rd(10, 15)
             self.task_graph.nodes[i]["latest_change_time"] = self.release_time
             self.task_graph.nodes[i]["is_scheduled"] = 0
             self.task_graph.nodes[i]["selected_node"] = -1

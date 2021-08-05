@@ -14,7 +14,6 @@ import draw
 import math
 import numpy as np
 import pqdict
-                
 
 def get_remain_length(G,edge_weight=1,node_weight=1):
     remain_length_list = [0] * G.number_of_nodes()
@@ -41,9 +40,9 @@ def set_tmax(_app,edge_list,cloud):
     slowest_process_date_rate = max([_e.process_data_rate for _e in edge_list])
     slowest_process_date_rate = max([slowest_process_date_rate,cloud.process_data_rate])
     _app.tmax = total_workload * slowest_process_date_rate
-    
+
 def get_node_with_least_cost_constrained_by_subdeadline(selected_task_index, _application,
-                                   edge_list, cloud, _release_time):
+                                   edge_list, cloud, _release_time, application_list):
     edge_number = len(edge_list)
     finish_time_list = []
     
@@ -134,7 +133,7 @@ def get_node_with_least_cost_constrained_by_subdeadline(selected_task_index, _ap
     return selected_node
 
 def get_node_with_earliest_finish_time(selected_task_index, _application,
-                                   edge_list, cloud, _release_time):
+                                   edge_list, cloud, _release_time, application_list):
     edge_number = len(edge_list)
     finish_time_list = []
 
@@ -198,7 +197,7 @@ def get_node_with_earliest_finish_time(selected_task_index, _application,
     return selected_node
 
 def get_node_with_earliest_finish_time_without_cloud(selected_task_index, _application,
-                                   edge_list, cloud, _release_time):
+                                   edge_list, cloud, _release_time, application_list):
     edge_number = len(edge_list)
     finish_time_list = []
 
@@ -296,9 +295,8 @@ def check(application_list):
                 st,fi = st_time,fi_time
                 _a_i,_t_i = a_i,t_i
 
-
 def get_node_with_least_cost_constrained_by_subdeadline_without_cloud(selected_task_index, _application,
-                                   edge_list, cloud, _release_time):
+                                   edge_list, cloud, _release_time, application_list):
     edge_number = len(edge_list)
     finish_time_list = []
     
@@ -386,18 +384,19 @@ def get_node_with_least_cost_constrained_by_subdeadline_without_cloud(selected_t
         # print("selected_task_index:{0},selected_node:{1}".format(selected_task_index,selected_node))
         # print("actual_start_time_list:{0}".format(actual_start_time_list))
         # print("finish_time_list:{0}".format(finish_time_list))
-
       
     return is_in_deadline,selected_node
 
 def get_node_with_least_cost_constrained_by_start_subdeadline_without_cloud(selected_task_index, _application,
-                                   edge_list, cloud, _release_time):
+                                   edge_list, cloud, _release_time, application_list):
     edge_number = len(edge_list)
     finish_time_list = []
     
     actual_start_time_list = []
     is_in_deadline  = []
     overdue_start_deadline = []
+    modified_a_t_list = []
+    selected_cpu_list = []
     for _selected_node in range(edge_number):
         precedence_task_finish_time = []
         for u, v in _application.task_graph.in_edges(selected_task_index):
@@ -424,19 +423,21 @@ def get_node_with_least_cost_constrained_by_start_subdeadline_without_cloud(sele
         earliest_start_time = _release_time if len(
             precedence_task_finish_time) == 0 else max(
                 precedence_task_finish_time)
+        print(earliest_start_time)
 
         # run time
         estimated_runtime = _application.task_graph.nodes[selected_task_index][
             "w"] * edge_list[_selected_node].process_data_rate
 
         # actual start time and _cpu
-        actual_start_time, _, _ = edge_list[_selected_node].find_actual_earliest_start_time_by_planed(earliest_start_time, estimated_runtime,_release_time)
-        # actual_start_time, _, _ = edge_list[_selected_node].find_actual_earliest_start_time_by_planed_modify(earliest_start_time, estimated_runtime,_release_time)
+        selected_cpu,modified_a,modified_t,actual_start_time = edge_list[_selected_node].find_actual_earliest_start_time_by_planed_modify(earliest_start_time, estimated_runtime,_release_time,application_list)
 
         # set start time and node for each task
         _selected_node_finish_time = actual_start_time + estimated_runtime
         finish_time_list.append(_selected_node_finish_time)
         actual_start_time_list.append(actual_start_time)
+        modified_a_t_list.append((modified_a,modified_t))
+        selected_cpu_list.append(selected_cpu)
 
         _is_in_deadline = True
         _overdue_start_deadline = 0
@@ -446,6 +447,7 @@ def get_node_with_least_cost_constrained_by_start_subdeadline_without_cloud(sele
                 _overdue_start_deadline = max(_overdue_start_deadline,_selected_node_finish_time + _application.task_graph.edges[u,v]["e"]*edge_list[_selected_node].upload_data_rate - _application.task_graph.nodes()[v]["start_sub_deadline"]+_application.release_time)
         is_in_deadline.append(_is_in_deadline)
         overdue_start_deadline.append(_overdue_start_deadline)
+        #print(_selected_node,selected_cpu,modified_a,modified_t,actual_start_time,_is_in_deadline,_overdue_start_deadline,earliest_start_time,estimated_runtime)
 
     # print("is_in_deadline:{0}".format(is_in_deadline))
     cost_per_mip_list = [i.cost_per_mip for i in edge_list]
@@ -473,9 +475,13 @@ def get_node_with_least_cost_constrained_by_start_subdeadline_without_cloud(sele
         # print("selected_task_index:{0},selected_node:{1}".format(selected_task_index,selected_node))
         # print("actual_start_time_list:{0}".format(actual_start_time_list))
         # print("finish_time_list:{0}".format(finish_time_list))
-
-     
-    return is_in_deadline,selected_node
+    
+    modified_a_t = modified_a_t_list[selected_node]
+    selected_cpu = selected_cpu_list[selected_node]
+    actual_start_time = actual_start_time_list[selected_node]
+    #print("*"*25)
+    #print("fuck",selected_task_index,is_in_deadline,selected_node,modified_a_t,selected_cpu,actual_start_time,finish_time_list[selected_node])
+    return is_in_deadline,selected_node,modified_a_t,selected_cpu,actual_start_time
     
 def get_node_by_random(selected_task_index, _application, edge_list, cloud, _release_time):
     return rd(0, len(edge_list))
