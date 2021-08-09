@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-04-16 16:18:15
 LastEditors: loujiong
-LastEditTime: 2021-07-21 16:27:22
+LastEditTime: 2021-08-08 21:33:46
 Description: draw task graph
 Email:  413012592@qq.com
 '''
@@ -236,8 +236,8 @@ def draw_gantt(_application_list,edge_list,cloud,is_annotation = False, is_only_
                     text_font = dict(size=12, color='black')
                     fig['layout']['annotations'] += tuple([dict(x=x_pos, y=y_pos, text=text, textangle=-30, showarrow=False, font=text_font)])
     for edge_index,item in enumerate(edge_list):
-        fig['layout']['annotations'] += tuple([dict(x=-150, y=edge_index+1, text="({0},{1})".format(item.cost_per_mip,item.process_data_rate), textangle=0, showarrow=False, font=text_font)])
-    fig['layout']['annotations'] += tuple([dict(x=-150, y=0, text="({0},{1})".format(cloud.cost_per_mip,cloud.process_data_rate), textangle=0, showarrow=False, font=text_font)])
+        fig['layout']['annotations'] += tuple([dict(x=-150, y=edge_index+1, text="({0},{1},{2})".format(item.cost_per_mip,item.process_data_rate,item.upload_data_rate), textangle=0, showarrow=False, font=text_font)])
+    fig['layout']['annotations'] += tuple([dict(x=-150, y=0, text="({0},{1},{2})".format(cloud.cost_per_mip,cloud.process_data_rate,cloud.data_rate), textangle=0, showarrow=False, font=text_font)])
     # 画边框
     fig.update_traces(mode='lines',
                       line_color='black',

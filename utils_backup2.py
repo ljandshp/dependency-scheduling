@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-04-16 13:18:37
 LastEditors: loujiong
-LastEditTime: 2021-07-25 17:40:11
+LastEditTime: 2021-08-08 20:09:13
 Description: utils file
 Email:  413012592@qq.com
 '''
@@ -66,8 +66,7 @@ class Edge():
             if _start < actual_start_time:
                 self.planed_start_finish[_cpu] = np.vstack([self.planed_start_finish[_cpu], np.array([_start, actual_start_time - 1])])
 
-    def update_plan_to_actural(self, _release_time, new_finish_task_set,
-                               application_list):
+    def update_plan_to_actural(self, new_finish_task_set, application_list):
         for item in new_finish_task_set:
             _ap_index, _ta_index, start_time, finish_time = [int(i) for i in item]
             cpu = application_list[_ap_index].task_graph.nodes()[_ta_index]["cpu"]
@@ -77,7 +76,6 @@ class Edge():
                 continue
             
             # first find the item in self.start_finish[cpu]
-            # print(self.start_finish[cpu])
             is_in_interval = (self.start_finish[cpu][:,0] <= start_time) * 1 + (self.start_finish[cpu][:,1] >= finish_time-1) * 1
             interval_key = np.argmax(is_in_interval)
             # print(interval_key)
@@ -233,7 +231,7 @@ class Application():
 
         # add weight
         for i in range(1, task_num + 1):
-            self.task_graph.nodes[i]["w"] = rd(3, 20) #rd(10, 15)
+            self.task_graph.nodes[i]["w"] = rd(3, 20) #rd(3, 20) #rd(10, 15)
             self.task_graph.nodes[i]["latest_change_time"] = self.release_time
             self.task_graph.nodes[i]["is_scheduled"] = 0
             self.task_graph.nodes[i]["selected_node"] = -1
@@ -334,13 +332,11 @@ class Application():
                 for u, v in self.task_graph.in_edges(selected_task_index):
                     precedence_task_node = self.task_graph.nodes[u][
                         "selected_node"]
-                    if precedence_task_node == edge_number:
-                        precedence_latest_transmission_time.append(
-                            earliest_start_time)
-                    else:
-                        precedence_latest_transmission_time.append(
+                    bandwidth = get_bandwidth(precedence_task_node,selected_node,edge_list,cloud)
+                    precedence_latest_transmission_time.append(
                             earliest_start_time -
-                            self.task_graph.edges[u, v]["e"] * cloud.data_rate)
+                            self.task_graph.edges[u, v]["e"] *bandwidth)
+                    
                 # globally earliest start time is _application.release_time
                 latest_change_time = min(
                     precedence_latest_transmission_time
@@ -353,21 +349,10 @@ class Application():
                 for u, v in self.task_graph.in_edges(selected_task_index):
                     precedence_task_node = self.task_graph.nodes[u][
                         "selected_node"]
-                    if precedence_task_node == edge_number:
-                        # from the cloud
-                        precedence_latest_transmission_time.append(
+                    bandwidth = get_bandwidth(precedence_task_node,selected_node,edge_list,cloud)
+                    precedence_latest_transmission_time.append(
                             earliest_start_time -
-                            self.task_graph.edges[u, v]["e"] * cloud.data_rate)
-                    elif precedence_task_node != selected_node:
-                        # not same edge node
-                        precedence_latest_transmission_time.append(
-                            earliest_start_time -
-                            self.task_graph.edges[u, v]["e"] *
-                            edge_list[precedence_task_node].upload_data_rate)
-                    else:
-                        # same ege node
-                        precedence_latest_transmission_time.append(
-                            earliest_start_time)
+                            self.task_graph.edges[u, v]["e"] *bandwidth)
 
                 # globally earliest start time is _application.release_time
                 latest_change_time = self.release_time if len(
@@ -396,7 +381,7 @@ def get_start_sub_deadline_list(G,remain_length_list,deadline = 10):
         sub_deadline_list[i] = deadline*(remain_length_list[0]-remain_length_list[i])/remain_length_list[0]
     return sub_deadline_list
     
-def get_node_with_least_cost_constrained_by_subdeadline(selected_task_index, _application,
+def get_node_with_least_cost_constrained_by_subdeadline(selected_task_index, _application:Application,
                                    edge_list, cloud, _release_time):
     edge_number = len(edge_list)
     finish_time_list = []
@@ -406,13 +391,11 @@ def get_node_with_least_cost_constrained_by_subdeadline(selected_task_index, _ap
     for u, v in _application.task_graph.in_edges(selected_task_index):
         precedence_task_node = _application.task_graph.nodes[u][
             "selected_node"]
-        if precedence_task_node == edge_number:
-            precedence_task_finish_time.append(
+        bandwidth = get_bandwidth(precedence_task_node,len(edge_list),edge_list,cloud)
+        precedence_task_finish_time.append(
+                _application.task_graph.edges[u, v]["e"] * bandwidth +
                 max(_application.task_graph.nodes[u]["finish_time"],_release_time))
-        else:
-            precedence_task_finish_time.append(
-                _application.task_graph.edges[u, v]["e"] * cloud.data_rate +
-                max(_application.task_graph.nodes[u]["finish_time"],_release_time))
+        
     # globally earliest start time is _application.release_time
     cloud_earliest_start_time = max(precedence_task_finish_time) if len(
         precedence_task_finish_time) > 0 else _release_time
@@ -423,21 +406,9 @@ def get_node_with_least_cost_constrained_by_subdeadline(selected_task_index, _ap
         for u, v in _application.task_graph.in_edges(selected_task_index):
             precedence_task_node = _application.task_graph.nodes[u][
                 "selected_node"]
-            if precedence_task_node == edge_number:
-                # from the cloud
-                precedence_task_finish_time.append(
-                    _application.task_graph.edges[u, v]["e"] *
-                    cloud.data_rate +
-                    max(_application.task_graph.nodes[u]["finish_time"],_release_time))
-            elif precedence_task_node != _selected_node:
-                # not same edge node
-                precedence_task_finish_time.append(
-                    _application.task_graph.edges[u, v]["e"] *
-                    edge_list[precedence_task_node].upload_data_rate +
-                    max(_application.task_graph.nodes[u]["finish_time"],_release_time))
-            else:
-                # same ege node
-                precedence_task_finish_time.append(
+            bandwidth = get_bandwidth(precedence_task_node,_selected_node,edge_list,cloud)
+            precedence_task_finish_time.append(
+                    _application.task_graph.edges[u, v]["e"] *bandwidth +
                     max(_application.task_graph.nodes[u]["finish_time"],_release_time))
 
         # globally earliest start time is _release_time
@@ -474,18 +445,23 @@ def get_node_with_least_cost_constrained_by_subdeadline(selected_task_index, _ap
             selected_node = i
             min_cost = cost_per_mip_list[i]
             ft = finish_time_list[i]
-
+    
+    
+    
+    is_in_deadline = selected_node > -1
     # if no node satisfy the sub_deadline
     if selected_node < 0:
         selected_node = np.argmin(np.array(finish_time_list))
-        # print("unsatisfied deadline")
-        # if selected_node == edge_number:
-            # print("unsatisfied and to the cloud")
-        # print("selected_task_index:{0},selected_node:{1}".format(selected_task_index,selected_node))
-        # print("actual_start_time_list:{0}".format(actual_start_time_list))
-        # print("finish_time_list:{0}".format(finish_time_list))
-        
-    return selected_node
+    
+    print("application:{0}, task:{1}".format(_application.application_index,selected_task_index))
+    print(actual_start_time_list)
+    print(finish_time_list)
+    print("selection:{0},cloud:{1}".format(selected_node,edge_number))
+    print("sub_deadline:{0}".format(sub_deadline))
+    print("release_time:{0}".format(_application.release_time))
+    print()
+    
+    return is_in_deadline,selected_node
 
 def get_node_with_earliest_finish_time(selected_task_index, _application,
                                    edge_list, cloud, _release_time):
@@ -497,12 +473,9 @@ def get_node_with_earliest_finish_time(selected_task_index, _application,
     for u, v in _application.task_graph.in_edges(selected_task_index):
         precedence_task_node = _application.task_graph.nodes[u][
             "selected_node"]
-        if precedence_task_node == edge_number:
-            precedence_task_finish_time.append(
-                max(_application.task_graph.nodes[u]["finish_time"],_release_time))
-        else:
-            precedence_task_finish_time.append(
-                _application.task_graph.edges[u, v]["e"] * cloud.data_rate +
+        bandwidth = get_bandwidth(precedence_task_node,len(edge_list),edge_list,cloud)
+        precedence_task_finish_time.append(
+                _application.task_graph.edges[u, v]["e"] * bandwidth +
                 max(_application.task_graph.nodes[u]["finish_time"],_release_time))
     # globally earliest start time is _application.release_time
     cloud_earliest_start_time = max(precedence_task_finish_time) if len(
@@ -514,21 +487,10 @@ def get_node_with_earliest_finish_time(selected_task_index, _application,
         for u, v in _application.task_graph.in_edges(selected_task_index):
             precedence_task_node = _application.task_graph.nodes[u][
                 "selected_node"]
-            if precedence_task_node == edge_number:
-                # from the cloud
-                precedence_task_finish_time.append(
+            bandwidth = get_bandwidth(precedence_task_node,_selected_node,edge_list,cloud)
+            precedence_task_finish_time.append(
                     _application.task_graph.edges[u, v]["e"] *
-                    cloud.data_rate +
-                    max(_application.task_graph.nodes[u]["finish_time"],_release_time))
-            elif precedence_task_node != _selected_node:
-                # not same edge node
-                precedence_task_finish_time.append(
-                    _application.task_graph.edges[u, v]["e"] *
-                    edge_list[precedence_task_node].upload_data_rate +
-                    max(_application.task_graph.nodes[u]["finish_time"],_release_time))
-            else:
-                # same ege node
-                precedence_task_finish_time.append(
+                    bandwidth +
                     max(_application.task_graph.nodes[u]["finish_time"],_release_time))
 
         # globally earliest start time is _application.release_time
@@ -549,7 +511,8 @@ def get_node_with_earliest_finish_time(selected_task_index, _application,
     finish_time_list.append(cloud_estimated_finish_time)
     selected_node = np.argmin(np.array(finish_time_list))
 
-    return selected_node
+    is_in_deadline = True
+    return is_in_deadline,selected_node
 
 def get_node_with_earliest_finish_time_without_cloud(selected_task_index, _application,
                                    edge_list, cloud, _release_time):
@@ -561,12 +524,9 @@ def get_node_with_earliest_finish_time_without_cloud(selected_task_index, _appli
     for u, v in _application.task_graph.in_edges(selected_task_index):
         precedence_task_node = _application.task_graph.nodes[u][
             "selected_node"]
-        if precedence_task_node == edge_number:
-            precedence_task_finish_time.append(
-                max(_application.task_graph.nodes[u]["finish_time"],_release_time))
-        else:
-            precedence_task_finish_time.append(
-                _application.task_graph.edges[u, v]["e"] * cloud.data_rate +
+        bandwidth = get_bandwidth(precedence_task_node,len(edge_list),edge_list,cloud)
+        precedence_task_finish_time.append(
+                _application.task_graph.edges[u, v]["e"] * bandwidth +
                 max(_application.task_graph.nodes[u]["finish_time"],_release_time))
     # globally earliest start time is _application.release_time
     cloud_earliest_start_time = max(precedence_task_finish_time) if len(
@@ -578,21 +538,9 @@ def get_node_with_earliest_finish_time_without_cloud(selected_task_index, _appli
         for u, v in _application.task_graph.in_edges(selected_task_index):
             precedence_task_node = _application.task_graph.nodes[u][
                 "selected_node"]
-            if precedence_task_node == edge_number:
-                # from the cloud
-                precedence_task_finish_time.append(
-                    _application.task_graph.edges[u, v]["e"] *
-                    cloud.data_rate +
-                    max(_application.task_graph.nodes[u]["finish_time"],_release_time))
-            elif precedence_task_node != _selected_node:
-                # not same edge node
-                precedence_task_finish_time.append(
-                    _application.task_graph.edges[u, v]["e"] *
-                    edge_list[precedence_task_node].upload_data_rate +
-                    max(_application.task_graph.nodes[u]["finish_time"],_release_time))
-            else:
-                # same ege node
-                precedence_task_finish_time.append(
+            bandwidth = get_bandwidth(precedence_task_node,_selected_node,edge_list,cloud)
+            precedence_task_finish_time.append(
+                    _application.task_graph.edges[u, v]["e"] *bandwidth +
                     max(_application.task_graph.nodes[u]["finish_time"],_release_time))
 
         # globally earliest start time is _application.release_time
@@ -615,40 +563,50 @@ def get_node_with_earliest_finish_time_without_cloud(selected_task_index, _appli
     is_in_deadline = False
     return is_in_deadline,selected_node
     
-def check(application_list):
-    d = dict()
-    for application_index,application in enumerate(application_list):
-        if application.is_accept:
-            for task_index in application.task_graph.nodes():
-                if application.task_graph.nodes()[task_index]["selected_node"] != -1 and application.task_graph.nodes()[task_index]["cpu"] != -1:
-                    start_time = application.task_graph.nodes()[task_index]["start_time"]
-                    finish_time = application.task_graph.nodes()[task_index]["finish_time"]
-                    node_cpu = "{0}-{1}".format(application.task_graph.nodes()[task_index]["selected_node"],application.task_graph.nodes()[task_index]["cpu"])
-                    if node_cpu not in d:
-                        d[node_cpu] = pqdict.pqdict()
-                    d[node_cpu][(application_index,task_index)] = (start_time,finish_time,application_index,task_index)
-    for node_cpu in d:
-        keys = pqdict.nsmallest(len(d[node_cpu]),d[node_cpu])
-        st = -1
-        fi = -1
-        _a_i = -1
-        _t_i = -1
-        for application_index,task_index in keys:
-            st_time,fi_time,a_i,t_i = d[node_cpu][(application_index,task_index)]
-            if st_time != fi_time:
-                if st_time > fi_time:
-                    # print("same task fi_time st time error")
-                    # print(st_time,fi_time)
-                    quit()
-                if st_time < fi:
-                    # print("cross task fi_time st time error")
-                    # print(fi,st_time,fi_time)
-                    # print(node_cpu)
-                    # print("last application-task: {0}-{1}".format(_a_i,_t_i))
-                    # print("current application-task: {0}-{1}".format(application_index,task_index))
-                    quit()
-                st,fi = st_time,fi_time
-                _a_i,_t_i = a_i,t_i
+def check(is_multiple:bool, application_list, edge_list, cloud):
+    # first check the precedence constraint
+    for application_index, application in enumerate(application_list):
+        for _n in application.task_graph.nodes():
+            for u,_ in application.task_graph.in_edges(_n):
+                bandwidth = get_bandwidth(application.task_graph.nodes[u]["selected_node"],application.task_graph.nodes[_n]["selected_node"], edge_list, cloud)
+                if application.task_graph.nodes[u]["finish_time"]+bandwidth*application.task_graph.edges[u,_n]["e"]>application.task_graph.nodes[_n]["start_time"]:
+                    print("precedence error")
+                    exit(1)
+
+    if is_multiple:          
+        d = dict()
+        for application_index,application in enumerate(application_list):
+            if application.is_accept:
+                for task_index in application.task_graph.nodes():
+                    if application.task_graph.nodes()[task_index]["selected_node"] != -1 and application.task_graph.nodes()[task_index]["cpu"] != -1:
+                        start_time = application.task_graph.nodes()[task_index]["start_time"]
+                        finish_time = application.task_graph.nodes()[task_index]["finish_time"]
+                        node_cpu = "{0}-{1}".format(application.task_graph.nodes()[task_index]["selected_node"],application.task_graph.nodes()[task_index]["cpu"])
+                        if node_cpu not in d:
+                            d[node_cpu] = pqdict.pqdict()
+                        d[node_cpu][(application_index,task_index)] = (start_time,finish_time,application_index,task_index)
+        for node_cpu in d:
+            keys = pqdict.nsmallest(len(d[node_cpu]),d[node_cpu])
+            st = -1
+            fi = -1
+            _a_i = -1
+            _t_i = -1
+            for application_index,task_index in keys:
+                st_time,fi_time,a_i,t_i = d[node_cpu][(application_index,task_index)]
+                if st_time != fi_time:
+                    if st_time > fi_time:
+                        # print("same task fi_time st time error")
+                        # print(st_time,fi_time)
+                        quit()
+                    if st_time < fi:
+                        # print("cross task fi_time st time error")
+                        # print(fi,st_time,fi_time)
+                        # print(node_cpu)
+                        # print("last application-task: {0}-{1}".format(_a_i,_t_i))
+                        # print("current application-task: {0}-{1}".format(application_index,task_index))
+                        quit()
+                    st,fi = st_time,fi_time
+                    _a_i,_t_i = a_i,t_i
 
 
 def get_node_with_least_cost_constrained_by_subdeadline_without_cloud(selected_task_index, _application,
@@ -661,13 +619,11 @@ def get_node_with_least_cost_constrained_by_subdeadline_without_cloud(selected_t
     for u, v in _application.task_graph.in_edges(selected_task_index):
         precedence_task_node = _application.task_graph.nodes[u][
             "selected_node"]
-        if precedence_task_node == edge_number:
-            precedence_task_finish_time.append(
+        bandwidth = get_bandwidth(precedence_task_node,len(edge_list),edge_list,cloud)
+        precedence_task_finish_time.append(
+                _application.task_graph.edges[u, v]["e"] * bandwidth +
                 max(_application.task_graph.nodes[u]["finish_time"],_release_time))
-        else:
-            precedence_task_finish_time.append(
-                _application.task_graph.edges[u, v]["e"] * cloud.data_rate +
-                max(_application.task_graph.nodes[u]["finish_time"],_release_time))
+        
     # globally earliest start time is _application.release_time
     cloud_earliest_start_time = max(precedence_task_finish_time) if len(
         precedence_task_finish_time) > 0 else _release_time
@@ -678,21 +634,10 @@ def get_node_with_least_cost_constrained_by_subdeadline_without_cloud(selected_t
         for u, v in _application.task_graph.in_edges(selected_task_index):
             precedence_task_node = _application.task_graph.nodes[u][
                 "selected_node"]
-            if precedence_task_node == edge_number:
-                # from the cloud
-                precedence_task_finish_time.append(
+            bandwidth = get_bandwidth(precedence_task_node,_selected_node,edge_list,cloud)
+            precedence_task_finish_time.append(
                     _application.task_graph.edges[u, v]["e"] *
-                    cloud.data_rate +
-                    max(_application.task_graph.nodes[u]["finish_time"],_release_time))
-            elif precedence_task_node != _selected_node:
-                # not same edge node
-                precedence_task_finish_time.append(
-                    _application.task_graph.edges[u, v]["e"] *
-                    edge_list[precedence_task_node].upload_data_rate +
-                    max(_application.task_graph.nodes[u]["finish_time"],_release_time))
-            else:
-                # same ege node
-                precedence_task_finish_time.append(
+                    bandwidth +
                     max(_application.task_graph.nodes[u]["finish_time"],_release_time))
 
         # globally earliest start time is _release_time
@@ -757,21 +702,9 @@ def get_node_with_least_cost_constrained_by_start_subdeadline_without_cloud(sele
         for u, v in _application.task_graph.in_edges(selected_task_index):
             precedence_task_node = _application.task_graph.nodes[u][
                 "selected_node"]
-            if precedence_task_node == edge_number:
-                # from the cloud
-                precedence_task_finish_time.append(
-                    _application.task_graph.edges[u, v]["e"] *
-                    cloud.data_rate +
-                    max(_application.task_graph.nodes[u]["finish_time"],_release_time))
-            elif precedence_task_node != _selected_node:
-                # not same edge node
-                precedence_task_finish_time.append(
-                    _application.task_graph.edges[u, v]["e"] *
-                    edge_list[precedence_task_node].upload_data_rate +
-                    max(_application.task_graph.nodes[u]["finish_time"],_release_time))
-            else:
-                # same ege node
-                precedence_task_finish_time.append(
+            bandwidth = get_bandwidth(precedence_task_node,_selected_node,edge_list,cloud)
+            precedence_task_finish_time.append(
+                    _application.task_graph.edges[u, v]["e"] * bandwidth +
                     max(_application.task_graph.nodes[u]["finish_time"],_release_time))
 
         # globally earliest start time is _release_time
@@ -795,9 +728,14 @@ def get_node_with_least_cost_constrained_by_start_subdeadline_without_cloud(sele
         _is_in_deadline = True
         _overdue_start_deadline = 0
         for u,v in _application.task_graph.out_edges(selected_task_index):
-            if _selected_node_finish_time + _application.task_graph.edges[u,v]["e"]*edge_list[_selected_node].upload_data_rate > _application.task_graph.nodes()[v]["start_sub_deadline"]+_application.release_time:
+            if v == _application.task_graph.number_of_nodes()-1:
+                bandwidth = get_bandwidth(_selected_node,_application.release_node,edge_list,cloud)
+            else:
+                bandwidth = edge_list[_selected_node].upload_data_rate
+
+            if _selected_node_finish_time + _application.task_graph.edges[u,v]["e"]*bandwidth > _application.task_graph.nodes()[v]["start_sub_deadline"]+_application.release_time:
                 _is_in_deadline = False
-                _overdue_start_deadline = max(_overdue_start_deadline,_selected_node_finish_time + _application.task_graph.edges[u,v]["e"]*edge_list[_selected_node].upload_data_rate - _application.task_graph.nodes()[v]["start_sub_deadline"]+_application.release_time)
+                _overdue_start_deadline = max(_overdue_start_deadline,_selected_node_finish_time + _application.task_graph.edges[u,v]["e"]*bandwidth - _application.task_graph.nodes()[v]["start_sub_deadline"]-_application.release_time)
         is_in_deadline.append(_is_in_deadline)
         overdue_start_deadline.append(_overdue_start_deadline)
 
@@ -840,6 +778,16 @@ def set_tmax(_app,edge_list,cloud):
     slowest_process_date_rate = max([slowest_process_date_rate,cloud.process_data_rate])
     _app.tmax = total_workload * slowest_process_date_rate
 
+def get_bandwidth(node1,node2, edge_list, cloud):
+    cloud_number = len(edge_list)
+    if node1 == node2:
+        return 0
+    elif node1 == cloud_number or node2 == cloud_number:
+        bandwidth = cloud.data_rate
+        return bandwidth
+    else:
+        bandwidth = edge_list[node1].upload_data_rate
+        return bandwidth
 
 if __name__ == '__main__':
     pass
