@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-08-04 11:11:52
 LastEditors: loujiong
-LastEditTime: 2021-08-04 11:11:52
+LastEditTime: 2021-08-09 23:07:03
 Description: 
 Email:  413012592@qq.com
 '''
@@ -111,7 +111,7 @@ class Application():
 
         # add weight
         for i in range(1, task_num + 1):
-            self.task_graph.nodes[i]["w"] = rd(3, 20)  #rd(10, 15)
+            self.task_graph.nodes[i]["w"] = 1+19*random.random() #rd(3, 20)  #rd(10, 15)
             self.task_graph.nodes[i]["latest_change_time"] = self.release_time
             self.task_graph.nodes[i]["is_scheduled"] = 0
             self.task_graph.nodes[i]["selected_node"] = -1
@@ -128,9 +128,9 @@ class Application():
 
         for u, v in self.task_graph.edges():
             if u == source_node or v == sink_node:
-                self.task_graph.edges[u, v]["e"] = rd(2, 7)
+                self.task_graph.edges[u, v]["e"] = 1 + 6*random.random() #rd(2, 7)
             else:
-                self.task_graph.edges[u, v]["e"] = rd(2, 7)
+                self.task_graph.edges[u, v]["e"] = 1 + 6*random.random() #rd(2, 7)
 
     def generate_node_for_level(self, node_num, level_num):
         node_number_for_level = [[1] for i in range(level_num)]
@@ -150,7 +150,7 @@ class Application():
         self.task_graph.nodes[selected_task]["selected_node"] = selected_node
         self.task_graph.nodes[selected_task]["cpu"] = _cpu
         self.task_graph.nodes[selected_task]["start_time"] = start_time
-
+        
     def generate_application_by_random(self, task_num):
         self.generate_task_graph_by_random(task_num)
 

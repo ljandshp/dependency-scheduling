@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-08-04 12:41:51
 LastEditors: loujiong
-LastEditTime: 2021-08-08 22:45:47
+LastEditTime: 2021-08-10 11:38:03
 Description: 
 Email:  413012592@qq.com
 '''
@@ -11,6 +11,7 @@ import networkx as nx
 from random import randint as rd
 import matplotlib.pyplot as plt
 import utils
+import utils_backup
 import draw
 import random
 import time
@@ -98,7 +99,7 @@ def re_scheduling(is_draw=False,
     release_time = 0
     for i in range(application_num):
         release_time_list.append(release_time)
-        release_time += math.ceil(random.expovariate(1 / application_average_interval))
+        release_time += random.expovariate(1 / application_average_interval)
     application_list = [
         Application.Application(release_time=release_time_list[i],
                           task_num=rd(10, 20),
@@ -128,7 +129,7 @@ def re_scheduling(is_draw=False,
     edge_list = [
         Edge.Edge(task_concurrent_capacity=1,
                    process_data_rate=process_data_rate_list[i],
-                   upload_data_rate=rd(3, 6),cost_per_mip = cost_per_mip_list[i], edge_index = i) for i in range(edge_number)
+                   upload_data_rate=4.5,cost_per_mip = cost_per_mip_list[i], edge_index = i) for i in range(edge_number)
     ]
 
     _cost_per_mip_list = []
@@ -244,6 +245,11 @@ def re_scheduling(is_draw=False,
                 # selecting node based on the scheduler
                 is_in_deadline, selected_node, modified_a_t, selected_cpu, selected_actual_start_time = scheduler(
                     selected_task_index, _current_application, edge_list, cloud, _release_time, application_list)
+                if modified_a_t[0] == 0 and modified_a_t[1] == 11:
+                    print(selected_actual_start_time)
+                    print(_current_application.task_graph.number_of_nodes())
+                    print(modified_a_t)
+                    quit()
             interested_time[2] += time.time() - interested_time_st
 
             if selected_node == edge_number:
@@ -258,6 +264,7 @@ def re_scheduling(is_draw=False,
                     "finish_time"] = selected_actual_start_time + _current_application.task_graph.nodes[
                         selected_task_index]["w"] * cloud.process_data_rate
             else:
+                
                 # schedule to the edge
                 estimated_runtime = _current_application.task_graph.nodes[
                     selected_task_index]["w"] * edge_list[
@@ -291,7 +298,9 @@ def re_scheduling(is_draw=False,
                     _a, _b, _c = unscheduled_tasks_sorted_by_remain_length[(_ap_index,v)]
                     _c = min(_c,0-(application_list[_ap_index].task_graph.nodes[v]["current_remain_length"]+_current_application.task_graph.nodes[selected_task_index]["finish_time"]+ _current_application.task_graph.edges[u,v]["e"]*edge_list[selected_node].upload_data_rate))
                     unscheduled_tasks_sorted_by_remain_length[(_ap_index,v)] = (_a-1, _b, _c)
-
+            # print()
+            # print(selected_task_index)
+            # print(modified_a_t)
             if selected_task_index == _current_application.task_graph.number_of_nodes() - 1:
                 if _current_application.task_graph.nodes[selected_task_index]["finish_time"]- _current_application.release_time <= _current_application.deadline:
                     _current_application.is_accept = True
@@ -310,10 +319,11 @@ def re_scheduling(is_draw=False,
                         else:
                             _current_application.task_graph.nodes[_n]["flexible_time"] = _current_application.deadline+_current_application.release_time
 
-                    # print([(_current_application.task_graph.nodes[_n]["selected_node"]) for _n in range(_current_application.task_graph.number_of_nodes())])
+                    # print([(_n,_current_application.task_graph.nodes[_n]["selected_node"],_current_application.task_graph.nodes[_n]["start_time"], _current_application.task_graph.nodes[_n]["finish_time"]) for _n in range(_current_application.task_graph.number_of_nodes())])
+                    # quit()
             _find_time = time.time()-st
             each_application_time += _find_time
-        # print()
+        
         
         new_finish_task_set = [np.empty((0,4)) for i in range(edge_number)]
         # pop task starting transmission  -> remove task satisfying finish scheduling condition
@@ -328,18 +338,34 @@ def re_scheduling(is_draw=False,
         
         for _edge_index,_edge_node in enumerate(edge_list):
             if is_multiple and new_finish_task_set[_edge_index].shape[0]>0:
-                _edge_node.update_plan_to_actural(new_finish_task_set[_edge_index],application_list)
+                _edge_node.update_plan_to_actural(new_finish_task_set[_edge_index],application_list,_release_time)
+        
+        
 
     utils.check(is_multiple, application_list, edge_list, cloud)
- 
     # output interval_statistical for each edge node
     for _edge_index,_edge_node in enumerate(edge_list):
         finish_task_set[_edge_index] = finish_task_set[_edge_index][finish_task_set[_edge_index][:,3].argsort()]
 
+    task_number_for_each_edge = [0]*edge_number
+    total_flexitime = [0]*edge_number
     for _application in application_list:
         # finish the last node
         sink_task_index =  _application.task_graph.number_of_nodes() - 1
         _application.finish_time = _application.task_graph.nodes[sink_task_index]["finish_time"]
+        # print([(_n,_current_application.task_graph.nodes[_n]["selected_node"],_current_application.task_graph.nodes[_n]["start_time"], _current_application.task_graph.nodes[_n]["finish_time"]) for _n in range(_current_application.task_graph.number_of_nodes())])
+        if _application.is_accept:
+            for _n in range(_application.task_graph.number_of_nodes()):
+                task_number_for_each_edge[_application.task_graph.nodes[_n]["selected_node"]] += 1
+                total_flexitime[_application.task_graph.nodes[_n]["selected_node"]] += _application.task_graph.nodes[_n]["flexible_time"] - _application.task_graph.nodes[_n]["finish_time"]
+    
+    for i in range(edge_number):
+        print("edge node:{0}".format(i))
+        print("cost_per_mip",edge_list[i].cost_per_mip)
+        print(task_number_for_each_edge[i])
+        print(total_flexitime[i])
+        print(total_flexitime[i]/task_number_for_each_edge[i])
+        print()
 
     accept_rate = sum([_application.is_accept for _application in application_list])/len(application_list)
 
@@ -374,7 +400,7 @@ if __name__ == '__main__':
     edge_number = 20
     random_seed = 1.2
     is_multiple = True
-    deadline_alpha = 0.225
+    deadline_alpha = 0.5
 
 
     for application_average_interval in range(100,300,30):
@@ -395,6 +421,7 @@ if __name__ == '__main__':
                 is_draw_task_graph=is_draw_task_graph,
                 is_multiple=is_multiple,
                 deadline_alpha=deadline_alpha)
+
             a_list[0]+=_a
             c_list[0]+=_c
 

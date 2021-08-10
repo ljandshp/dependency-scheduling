@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-04-16 13:18:37
 LastEditors: loujiong
-LastEditTime: 2021-08-08 22:01:31
+LastEditTime: 2021-08-09 23:01:08
 Description: utils file
 Email:  413012592@qq.com
 '''
@@ -19,7 +19,7 @@ np.set_printoptions(suppress=True)
 def get_remain_length(G,edge_weight=1,node_weight=1):
     remain_length_list = [0] * G.number_of_nodes()
     for v in list(reversed(list(nx.topological_sort(G)))):
-        for u, v in G.in_edges(v):
+        for u, _ in G.in_edges(v):
             remain_length_list[u] = max(
                 remain_length_list[u], remain_length_list[v] + G.nodes[u]["w"]*node_weight + G.edges[u,v]["e"]*edge_weight)
     return (remain_length_list)
@@ -252,7 +252,8 @@ def check(is_multiple:bool,application_list, edge_list, cloud):
                         quit()
                     if st_time < fi:
                         print("cross task fi_time st time error")
-                        # print(fi,st_time,fi_time)
+                        print(st,fi,st_time,fi_time)
+                        print(a_i,t_i)
                         # print(node_cpu)
                         # print("last application-task: {0}-{1}".format(_a_i,_t_i))
                         # print("current application-task: {0}-{1}".format(application_index,task_index))
@@ -412,9 +413,6 @@ def get_node_with_least_cost_constrained_by_start_subdeadline_without_cloud(sele
     if selected_node < 0:
         selected_node = np.argmin(np.array(overdue_start_deadline))
 
-    # print(selected_task_index, overdue_start_deadline)
-    # selected_node = np.argmin(np.array(overdue_start_deadline))
-    
     modified_a_t = modified_a_t_list[selected_node]
     selected_cpu = selected_cpu_list[selected_node]
     actual_start_time = actual_start_time_list[selected_node]

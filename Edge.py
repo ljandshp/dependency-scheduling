@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-08-04 11:07:37
 LastEditors: loujiong
-LastEditTime: 2021-08-09 13:33:02
+LastEditTime: 2021-08-09 23:48:39
 Description: 
 Email:  413012592@qq.com
 '''
@@ -18,14 +18,13 @@ class Edge():
                  upload_data_rate, cost_per_mip = 1, edge_index = 1):
         # set 10000 time slots first
         self.task_concurrent_capacity = task_concurrent_capacity
-        self.planed_start_finish = [np.array([[0,10000000000000,-1,-1,-1,-1]]) for i in range(self.task_concurrent_capacity)]
-        self.start_finish = [np.array([[0,10000000000000,-1,-1,-1,-1]]) for i in range(self.task_concurrent_capacity)]
+        self.planed_start_finish = [np.array([[0.0,10000000000000,-1,-1,-1,-1]]) for i in range(self.task_concurrent_capacity)]
+        self.start_finish = [np.array([[0.0,10000000000000,-1,-1,-1,-1]]) for i in range(self.task_concurrent_capacity)]
         self.process_data_rate = process_data_rate
         self.upload_data_rate = upload_data_rate
         self.cost_per_mip = cost_per_mip
         self.assigned_task_list = [np.empty((0,5)) for i in range(self.task_concurrent_capacity)]
         self.assigned_task_since_release_time = [0 for i in range(self.task_concurrent_capacity)]
-        self.last_release_time = -1
         self.planed_update_start_finish_list = {}
         self.edge_index = edge_index
 
@@ -60,6 +59,8 @@ class Edge():
         min_start_time = math.inf
         selected_a = -1
         selected_t = -1
+        # print(self.planed_start_finish[0])
+        # print(self.assigned_task_since_release_time[0])
         for _cpu in range(self.task_concurrent_capacity):
             # for sink and source tasks or empty tasks
             if runtime == 0:
@@ -92,23 +93,25 @@ class Edge():
                 if interval_after.shape[0] == 1:
                     _finish = interval_after[0][1]
                 else:
-                    _finish = _t_item[3] - 1
+                    _finish = _t_item[3]
 
-                _f = min(_finish,application_list[_a].task_graph.nodes[_t]["flexible_time"]-1) 
+                _f = min(_finish,application_list[_a].task_graph.nodes[_t]["flexible_time"]) 
                 _s = max(start_time,_start)
 
-                if _f -_s + 1 >= application_list[_a].task_graph.nodes[_t]["finish_time"] - application_list[_a].task_graph.nodes[_t]["start_time"] + runtime:
+                if _f -_s >= application_list[_a].task_graph.nodes[_t]["finish_time"] - application_list[_a].task_graph.nodes[_t]["start_time"] + runtime:
                     if min_start_time_cpu > _s:
                         min_start_time_cpu = _s
                         selected_a_cpu = _a
                         selected_t_cpu = _t
         
             # no task modified
-            is_in_interval = self.planed_start_finish[_cpu][:,1] - np.maximum(start_time,self.planed_start_finish[_cpu][:,0]) >= runtime - 1
+            is_in_interval = self.planed_start_finish[_cpu][:,1] - np.maximum(start_time,self.planed_start_finish[_cpu][:,0]) >= runtime
             st_time = (1 - is_in_interval)* 1000000000000000 + np.maximum(start_time,self.planed_start_finish[_cpu][:,0])
             interval_key = np.argmin(st_time)
 
+            
             _min_start_time_cpu = max(start_time,self.planed_start_finish[_cpu][interval_key][0])
+            # print(_min_start_time_cpu)
             if  min_start_time_cpu > _min_start_time_cpu:
                 min_start_time_cpu = _min_start_time_cpu
                 selected_a_cpu = -1
@@ -170,14 +173,14 @@ class Edge():
             # modify before interval if exists
             if interval_before.shape[0] == 1:
                 if actual_start_time > interval_before[0][0]:
-                    self.planed_start_finish[_cpu] = np.vstack([self.planed_start_finish[_cpu], np.array([interval_before[0][0], actual_start_time-1 ,interval_before[0][2],interval_before[0][3],_application_index,selected_index])])
+                    self.planed_start_finish[_cpu] = np.vstack([self.planed_start_finish[_cpu], np.array([interval_before[0][0], actual_start_time ,interval_before[0][2],interval_before[0][3],_application_index,selected_index])])
             
             _index = (self.assigned_task_since_release_time[_cpu][:,0]==modified_a) & (self.assigned_task_since_release_time[_cpu][:,1]==modified_t)
             modified_item = self.assigned_task_since_release_time[_cpu][_index,:][0]
             modified_s = modified_item[2]
             modified_f = modified_item[3]
             if actual_start_time + estimated_runtime < modified_s:
-                self.planed_start_finish[_cpu] = np.vstack([self.planed_start_finish[_cpu], np.array([actual_start_time + estimated_runtime, modified_s-1 , _application_index, selected_index, modified_a, modified_t])])
+                self.planed_start_finish[_cpu] = np.vstack([self.planed_start_finish[_cpu], np.array([actual_start_time + estimated_runtime, modified_s , _application_index, selected_index, modified_a, modified_t])])
             elif actual_start_time + estimated_runtime > modified_s:
                 modified_f += actual_start_time + estimated_runtime - modified_s
                 modified_s = actual_start_time + estimated_runtime
@@ -188,30 +191,41 @@ class Edge():
             
             # modify before interval if exists
             if interval_after.shape[0] == 1:
-                if modified_f - 1 < interval_after[0][1]:
+                if modified_f < interval_after[0][1]:
                     self.planed_start_finish[_cpu] = np.vstack([self.planed_start_finish[_cpu], np.array([modified_f, interval_after[0][1] , modified_a, modified_t, interval_after[0][4], interval_after[0][5]])])
-        
+        # print(_cpu, actual_start_time,
+                                # estimated_runtime, _application_index,
+                                # selected_index, modified_a_t)
         if estimated_runtime != 0 and modified_a == -1:
-            index = np.where((self.planed_start_finish[_cpu][:,0] <= actual_start_time)&(self.planed_start_finish[_cpu][:,1] >= actual_start_time+estimated_runtime-1)) 
+            index = np.where((self.planed_start_finish[_cpu][:,0] <= actual_start_time)&(self.planed_start_finish[_cpu][:,1] >= actual_start_time+estimated_runtime)) 
             index = index[0][0]
+            # print(index)
 
             _s = self.planed_start_finish[_cpu][index][0]
-            add_item = np.array([_s, actual_start_time-1 , self.planed_start_finish[_cpu][index][2], self.planed_start_finish[_cpu][index][3], _application_index, selected_index])
+            add_item = np.array([_s, actual_start_time , self.planed_start_finish[_cpu][index][2], self.planed_start_finish[_cpu][index][3], _application_index, selected_index])
 
             if actual_start_time+estimated_runtime <= self.planed_start_finish[_cpu][index][1]:
+                # print("before",self.planed_start_finish[_cpu][index][0])
                 self.planed_start_finish[_cpu][index][0]= actual_start_time+estimated_runtime
                 self.planed_start_finish[_cpu][index][2]= _application_index
                 self.planed_start_finish[_cpu][index][3]= selected_index
+                # print(actual_start_time+estimated_runtime,self.planed_start_finish[_cpu][index][0])
             else:
                 self.planed_start_finish[_cpu] = np.delete(self.planed_start_finish[_cpu], index, 0)
-            
+            # print("ffff",self.planed_start_finish[_cpu][index])
+            # print(_s,actual_start_time)
             if _s < actual_start_time:
                 self.planed_start_finish[_cpu] = np.vstack([self.planed_start_finish[_cpu], add_item])
             
     def update_plan_to_actural(self, new_finish_task_set,
-                               application_list):
+                               application_list,_release_time):
         for item in new_finish_task_set:
-            _ap_index, _ta_index, start_time, finish_time = [int(i) for i in item]
+
+            _ap_index, _ta_index, start_time, finish_time = [i for i in item]
+            _ap_index = int(_ap_index)
+            _ta_index = int(_ta_index)
+            cpu = application_list[_ap_index].task_graph.nodes()[_ta_index]["cpu"]
+
             if start_time == finish_time:
                 continue
             cpu = application_list[_ap_index].task_graph.nodes()[_ta_index]["cpu"]
@@ -219,7 +233,7 @@ class Edge():
             
         # first delete
         for _cpu in range(self.task_concurrent_capacity):
-            self.start_finish[_cpu] = self.start_finish[_cpu][self.start_finish[_cpu][:,1]<self.last_release_time,:]
+            self.start_finish[_cpu] = self.start_finish[_cpu][self.start_finish[_cpu][:,1]<_release_time,:]
 
         # then copy from the planed
         for _cpu in range(self.task_concurrent_capacity):
@@ -237,7 +251,6 @@ class Edge():
             self.assigned_task_list[_cpu][_index,3] = modified_f
              
     def generate_plan(self, _release_time):
-        self.last_release_time = _release_time
         self.planed_start_finish = [0 for i in range(self.task_concurrent_capacity)]
         self.assigned_task_since_release_time = [0 for i in range(self.task_concurrent_capacity)]
         for _cpu in range(self.task_concurrent_capacity):

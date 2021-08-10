@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-08-06 13:33:22
 LastEditors: loujiong
-LastEditTime: 2021-08-08 20:24:37
+LastEditTime: 2021-08-10 11:42:42
 Description: 
 Email:  413012592@qq.com
 '''
@@ -97,7 +97,7 @@ def re_scheduling(is_draw=False,
     release_time = 0
     for i in range(application_num):
         release_time_list.append(release_time)
-        release_time += math.ceil(random.expovariate(1 / application_average_interval))
+        release_time += random.expovariate(1 / application_average_interval)
     application_list = [
         utils.Application(release_time=release_time_list[i],
                           task_num=rd(10, 20),
@@ -127,7 +127,7 @@ def re_scheduling(is_draw=False,
     edge_list = [
         utils.Edge(task_concurrent_capacity=1,
                    process_data_rate=process_data_rate_list[i],
-                   upload_data_rate=rd(3, 6),cost_per_mip = cost_per_mip_list[i]) for i in range(edge_number)
+                   upload_data_rate=4.5,cost_per_mip = cost_per_mip_list[i]) for i in range(edge_number)
     ]
 
     _cost_per_mip_list = []
@@ -339,9 +339,9 @@ def re_scheduling(is_draw=False,
             _find_time = time.time()-st
             each_application_time += _find_time
             
-        if not application_list[_release_index].is_accept:
-            #进行有关cloud的调度
-            re = utils.schedule_with_cloud(application_list[_release_index],edge_list,cloud)
+        # if not application_list[_release_index].is_accept:
+        #     #进行有关cloud的调度
+        #     re = utils.schedule_with_cloud(application_list[_release_index],edge_list,cloud)
 
         new_finish_task_set = [np.empty((0,4)) for i in range(edge_number)]
         while (len(unscheduled_tasks) > 0):
@@ -390,6 +390,7 @@ def re_scheduling(is_draw=False,
         _performance_list.append((_edge_index,_edge_node.process_data_rate))
 
     # print(time.time()-all_st)
+    # print(interested_time)
     return(accept_rate,total_cost)
 
 if __name__ == '__main__':
@@ -401,7 +402,7 @@ if __name__ == '__main__':
     edge_number = 20
     random_seed = 1.2
     is_multiple = True
-    deadline_alpha = 0.2
+    deadline_alpha = 0.5
 
     for application_average_interval in range(100,300,30):
         exp_num = 1
@@ -423,7 +424,6 @@ if __name__ == '__main__':
                 deadline_alpha=deadline_alpha)
             a_list[0]+=_a
             c_list[0]+=_c
-
         print(application_average_interval)
         print([i/exp_num for i in a_list])
         print([i/exp_num for i in c_list])

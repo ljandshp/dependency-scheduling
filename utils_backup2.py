@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-04-16 13:18:37
 LastEditors: loujiong
-LastEditTime: 2021-08-08 20:09:13
+LastEditTime: 2021-08-10 00:36:01
 Description: utils file
 Email:  413012592@qq.com
 '''
@@ -21,13 +21,11 @@ class Edge():
                  upload_data_rate, cost_per_mip = 1):
         # set 10000 time slots first
         self.task_concurrent_capacity = task_concurrent_capacity
-        self.planed_start_finish = [np.array([[0,10000000000000]]) for i in range(self.task_concurrent_capacity)]
-        self.start_finish = [np.array([[0,10000000000000]]) for i in range(self.task_concurrent_capacity)]
+        self.planed_start_finish = [np.array([[0.0,10000000000000]]) for i in range(self.task_concurrent_capacity)]
+        self.start_finish = [np.array([[0.0,10000000000000]]) for i in range(self.task_concurrent_capacity)]
         self.process_data_rate = process_data_rate
         self.upload_data_rate = upload_data_rate
         self.cost_per_mip = cost_per_mip
-        self.assigned_task_list = [np.empty((0,4)) for i in range(self.task_concurrent_capacity)]
-        self.assigned_task_since_release_time = [0 for i in range(self.task_concurrent_capacity)]
 
     def find_actual_earliest_start_time_by_planed(self, start_time, runtime, _release_time):
         min_start_time = 1000000000000000
@@ -37,7 +35,7 @@ class Edge():
             # earliest start time for virtual task is its start_time
             if runtime == 0:
                 return (start_time,0, 0)
-            is_in_interval = self.planed_start_finish[_cpu][:,1] - np.maximum(start_time,self.planed_start_finish[_cpu][:,0]) >= runtime - 1
+            is_in_interval = self.planed_start_finish[_cpu][:,1] - np.maximum(start_time,self.planed_start_finish[_cpu][:,0]) >= runtime
             st_time = (1 - is_in_interval)* 1000000000000000 + np.maximum(start_time,self.planed_start_finish[_cpu][:,0])
             interval_key = np.argmin(st_time)
             _st = max(start_time,self.planed_start_finish[_cpu][interval_key][0])
@@ -47,9 +45,6 @@ class Edge():
                 selected_cpu = _cpu
         return (min_start_time, selected_cpu, selected_interval_key)
 
-    # def find_actual_earliest_start_time_by_planed_modify(self, start_time, runtime, deadline, _release_time):
-        
-
     def set_cpu_state_by_planed(self, _cpu, actual_start_time,
                                 estimated_runtime, _application_index,
                                 selected_index, selected_interval_key):
@@ -57,29 +52,29 @@ class Edge():
         if estimated_runtime != 0:   
             _start = self.planed_start_finish[_cpu][selected_interval_key][0]
             _end = self.planed_start_finish[_cpu][selected_interval_key][1]
-            min_end_time = actual_start_time + estimated_runtime - 1
+            actual_end_time = actual_start_time + estimated_runtime
             self.planed_start_finish[_cpu] = np.delete(self.planed_start_finish[_cpu], selected_interval_key, 0)
             if _end == 10000000000000:
-                self.planed_start_finish[_cpu] = np.vstack([self.planed_start_finish[_cpu], np.array([min_end_time + 1, _end])])
-            elif _end > min_end_time:
-                self.planed_start_finish[_cpu] = np.vstack([self.planed_start_finish[_cpu], np.array([min_end_time + 1, _end])])
+                self.planed_start_finish[_cpu] = np.vstack([self.planed_start_finish[_cpu], np.array([actual_end_time, _end])])
+            elif _end > actual_end_time:
+                self.planed_start_finish[_cpu] = np.vstack([self.planed_start_finish[_cpu], np.array([actual_end_time, _end])])
             if _start < actual_start_time:
-                self.planed_start_finish[_cpu] = np.vstack([self.planed_start_finish[_cpu], np.array([_start, actual_start_time - 1])])
+                self.planed_start_finish[_cpu] = np.vstack([self.planed_start_finish[_cpu], np.array([_start, actual_start_time])])
 
     def update_plan_to_actural(self, new_finish_task_set, application_list):
         for item in new_finish_task_set:
-            _ap_index, _ta_index, start_time, finish_time = [int(i) for i in item]
+            _ap_index, _ta_index, start_time, finish_time = [i for i in item]
+            _ap_index = int(_ap_index)
+            _ta_index = int(_ta_index)
             cpu = application_list[_ap_index].task_graph.nodes()[_ta_index]["cpu"]
-            self.assigned_task_list[cpu] = np.vstack([self.assigned_task_list[cpu],np.array([_ap_index, _ta_index, start_time, finish_time])])
             
             if start_time == finish_time:
                 continue
             
             # first find the item in self.start_finish[cpu]
-            is_in_interval = (self.start_finish[cpu][:,0] <= start_time) * 1 + (self.start_finish[cpu][:,1] >= finish_time-1) * 1
+            is_in_interval = (self.start_finish[cpu][:,0] <= start_time) * 1 + (self.start_finish[cpu][:,1] >= finish_time) * 1
             interval_key = np.argmax(is_in_interval)
-            # print(interval_key)
-
+            
             # then try to split the time interval 
             _start = self.start_finish[cpu][interval_key][0]
             _end = self.start_finish[cpu][interval_key][1]
@@ -87,29 +82,17 @@ class Edge():
             self.start_finish[cpu] = np.delete(self.start_finish[cpu], interval_key, 0)
             if _end == 10000000000000:
                 self.start_finish[cpu] = np.vstack([self.start_finish[cpu], np.array([finish_time, _end])])
-            elif _end > finish_time - 1:
+            elif _end > finish_time:
                 self.start_finish[cpu] = np.vstack([self.start_finish[cpu], np.array([finish_time, _end])])
             if _start < start_time:
-                self.start_finish[cpu] = np.vstack([self.start_finish[cpu], np.array([_start, start_time - 1])])
-        
-            # print("self.start_finish",self.start_finish)
+                self.start_finish[cpu] = np.vstack([self.start_finish[cpu], np.array([_start, start_time])])
                
 
     def generate_plan(self, _release_time):
         self.planed_start_finish = [0 for i in range(self.task_concurrent_capacity)]
-        self.assigned_task_since_release_time = [0 for i in range(self.task_concurrent_capacity)]
         for _cpu in range(self.task_concurrent_capacity):
             self.planed_start_finish[_cpu] = self.start_finish[_cpu].copy()
-            # print()
-            # print("Release time:{0}".format(_release_time))
-            # print("Before filtering")
-            # print(self.planed_start_finish[_cpu])
             self.planed_start_finish[_cpu] = self.planed_start_finish[_cpu][self.planed_start_finish[_cpu][:,1]>=_release_time,:] 
-            # print("After filtering")
-            # print(self.planed_start_finish[_cpu])
-            self.assigned_task_since_release_time[_cpu] = self.assigned_task_list[_cpu]
-            self.assigned_task_since_release_time[_cpu] = self.assigned_task_since_release_time[_cpu][self.assigned_task_since_release_time[_cpu][:,2]>= _release_time,:]
-
 
     def interval_statistical(self):
         interval_number_list = []
@@ -142,7 +125,6 @@ class Application():
         task_num=5,
         application_index = -1
     ):
-        # print("start initial application {0}".format(application_index))
         self.release_time = release_time
         self.finish_time = -1
         self.release_node = release_node
@@ -216,9 +198,6 @@ class Application():
             test_num += 1
             if test_num > 2000:
                 break
-        
-        # print("task list:{0}, task_num:{1}, edge_num:{2}".format(self.task_graph.nodes(),task_num,edge_num))
-        # print("-"*100)
 
         source_node = 0
         sink_node = task_num + 1
@@ -231,7 +210,7 @@ class Application():
 
         # add weight
         for i in range(1, task_num + 1):
-            self.task_graph.nodes[i]["w"] = rd(3, 20) #rd(3, 20) #rd(10, 15)
+            self.task_graph.nodes[i]["w"] = 1+19*random.random() #rd(3, 20) #rd(10, 15)
             self.task_graph.nodes[i]["latest_change_time"] = self.release_time
             self.task_graph.nodes[i]["is_scheduled"] = 0
             self.task_graph.nodes[i]["selected_node"] = -1
@@ -248,9 +227,9 @@ class Application():
 
         for u, v in self.task_graph.edges():
             if u == source_node or v == sink_node:
-                self.task_graph.edges[u, v]["e"] = rd(2, 7)
+                self.task_graph.edges[u, v]["e"] = 1 + 6*random.random() #rd(2, 7)
             else:
-                self.task_graph.edges[u, v]["e"] = rd(2, 7)
+                self.task_graph.edges[u, v]["e"] = 1 + 6*random.random() #rd(2, 7)
 
     def generate_node_for_level(self, node_num, level_num):
         node_number_for_level = [[1] for i in range(level_num)]
@@ -324,47 +303,28 @@ class Application():
             self.task_graph.nodes[selected_task_index][
                 "latest_change_time"] = self.release_time
         else:
-            edge_number = len(edge_list)
-            if selected_node == edge_number:
-                # schedule to the cloud
-                # earliest_state_time+ transimmission time + precedence job finish time
-                precedence_latest_transmission_time = []
-                for u, v in self.task_graph.in_edges(selected_task_index):
-                    precedence_task_node = self.task_graph.nodes[u][
-                        "selected_node"]
-                    bandwidth = get_bandwidth(precedence_task_node,selected_node,edge_list,cloud)
-                    precedence_latest_transmission_time.append(
-                            earliest_start_time -
-                            self.task_graph.edges[u, v]["e"] *bandwidth)
-                    
-                # globally earliest start time is _application.release_time
-                latest_change_time = min(
-                    precedence_latest_transmission_time
-                ) if len(precedence_latest_transmission_time
-                         ) > 0 else self.release_time
-                self.task_graph.nodes[selected_task_index][
-                    "latest_change_time"] = latest_change_time
-            else:
-                precedence_latest_transmission_time = []
-                for u, v in self.task_graph.in_edges(selected_task_index):
-                    precedence_task_node = self.task_graph.nodes[u][
-                        "selected_node"]
-                    bandwidth = get_bandwidth(precedence_task_node,selected_node,edge_list,cloud)
-                    precedence_latest_transmission_time.append(
-                            earliest_start_time -
-                            self.task_graph.edges[u, v]["e"] *bandwidth)
-
-                # globally earliest start time is _application.release_time
-                latest_change_time = self.release_time if len(
-                    precedence_latest_transmission_time) == 0 else min(
-                        precedence_latest_transmission_time)
-                self.task_graph.nodes[selected_task_index][
-                    "latest_change_time"] = latest_change_time
+            # earliest_state_time+ transimmission time + precedence job finish time
+            precedence_latest_transmission_time = []
+            for u, v in self.task_graph.in_edges(selected_task_index):
+                precedence_task_node = self.task_graph.nodes[u][
+                    "selected_node"]
+                bandwidth = get_bandwidth(precedence_task_node,selected_node,edge_list,cloud)
+                precedence_latest_transmission_time.append(
+                        earliest_start_time -
+                        self.task_graph.edges[u, v]["e"] *bandwidth)
+                
+            # globally earliest start time is _application.release_time
+            latest_change_time = min(
+                precedence_latest_transmission_time
+            ) if len(precedence_latest_transmission_time
+                        ) > 0 else self.release_time
+            self.task_graph.nodes[selected_task_index][
+                "latest_change_time"] = latest_change_time
 
 def get_remain_length(G,edge_weight=1,node_weight=1):
     remain_length_list = [0] * G.number_of_nodes()
     for v in list(reversed(list(nx.topological_sort(G)))):
-        for u, v in G.in_edges(v):
+        for u, _ in G.in_edges(v):
             remain_length_list[u] = max(
                 remain_length_list[u], remain_length_list[v] + G.nodes[u]["w"]*node_weight + G.edges[u,v]["e"]*edge_weight)
     return (remain_length_list)
@@ -437,11 +397,11 @@ def get_node_with_least_cost_constrained_by_subdeadline(selected_task_index, _ap
     min_cost = 10000
     ft = 100000000000
     for i in range(edge_number+1):
-        if cost_per_mip_list[i] < min_cost and finish_time_list[i] < sub_deadline:
+        if cost_per_mip_list[i] < min_cost and finish_time_list[i] <= sub_deadline:
             selected_node = i
             min_cost = cost_per_mip_list[i]
             ft = finish_time_list[i]
-        if cost_per_mip_list[i] == min_cost and finish_time_list[i] < sub_deadline and finish_time_list[i] < ft:
+        if cost_per_mip_list[i] == min_cost and finish_time_list[i] <= sub_deadline and finish_time_list[i] < ft:
             selected_node = i
             min_cost = cost_per_mip_list[i]
             ft = finish_time_list[i]
@@ -453,13 +413,13 @@ def get_node_with_least_cost_constrained_by_subdeadline(selected_task_index, _ap
     if selected_node < 0:
         selected_node = np.argmin(np.array(finish_time_list))
     
-    print("application:{0}, task:{1}".format(_application.application_index,selected_task_index))
-    print(actual_start_time_list)
-    print(finish_time_list)
-    print("selection:{0},cloud:{1}".format(selected_node,edge_number))
-    print("sub_deadline:{0}".format(sub_deadline))
-    print("release_time:{0}".format(_application.release_time))
-    print()
+    # print("application:{0}, task:{1}".format(_application.application_index,selected_task_index))
+    # print(actual_start_time_list)
+    # print(finish_time_list)
+    # print("selection:{0},cloud:{1}".format(selected_node,edge_number))
+    # print("sub_deadline:{0}".format(sub_deadline))
+    # print("release_time:{0}".format(_application.release_time))
+    # print()
     
     return is_in_deadline,selected_node
 
@@ -595,15 +555,13 @@ def check(is_multiple:bool, application_list, edge_list, cloud):
                 st_time,fi_time,a_i,t_i = d[node_cpu][(application_index,task_index)]
                 if st_time != fi_time:
                     if st_time > fi_time:
-                        # print("same task fi_time st time error")
-                        # print(st_time,fi_time)
+                        print("same task fi_time st time error")
+                        print(st_time,fi_time)
                         quit()
                     if st_time < fi:
-                        # print("cross task fi_time st time error")
-                        # print(fi,st_time,fi_time)
-                        # print(node_cpu)
-                        # print("last application-task: {0}-{1}".format(_a_i,_t_i))
-                        # print("current application-task: {0}-{1}".format(application_index,task_index))
+                        print("cross task fi_time st time error")
+                        print(fi,st_time,fi_time)
+                        print(a_i,t_i)
                         quit()
                     st,fi = st_time,fi_time
                     _a_i,_t_i = a_i,t_i
@@ -666,11 +624,11 @@ def get_node_with_least_cost_constrained_by_subdeadline_without_cloud(selected_t
     min_cost = 10000
     ft = 100000000000
     for i in range(edge_number):
-        if cost_per_mip_list[i] < min_cost and finish_time_list[i] < sub_deadline:
+        if cost_per_mip_list[i] < min_cost and finish_time_list[i] <= sub_deadline:
             selected_node = i
             min_cost = cost_per_mip_list[i]
             ft = finish_time_list[i]
-        if cost_per_mip_list[i] == min_cost and finish_time_list[i] < sub_deadline and finish_time_list[i] < ft:
+        if cost_per_mip_list[i] == min_cost and finish_time_list[i] <= sub_deadline and finish_time_list[i] < ft:
             selected_node = i
             min_cost = cost_per_mip_list[i]
             ft = finish_time_list[i]
@@ -679,13 +637,6 @@ def get_node_with_least_cost_constrained_by_subdeadline_without_cloud(selected_t
     # if no node satisfy the sub_deadline
     if selected_node < 0:
         selected_node = np.argmin(np.array(finish_time_list[:-1]))
-        # print("unsatisfied deadline")
-        # if selected_node == edge_number:
-            # print("unsatisfied and to the cloud")
-        # print("selected_task_index:{0},selected_node:{1}".format(selected_task_index,selected_node))
-        # print("actual_start_time_list:{0}".format(actual_start_time_list))
-        # print("finish_time_list:{0}".format(finish_time_list))
-
       
     return is_in_deadline,selected_node
 
@@ -718,7 +669,6 @@ def get_node_with_least_cost_constrained_by_start_subdeadline_without_cloud(sele
 
         # actual start time and _cpu
         actual_start_time, _, _ = edge_list[_selected_node].find_actual_earliest_start_time_by_planed(earliest_start_time, estimated_runtime,_release_time)
-        # actual_start_time, _, _ = edge_list[_selected_node].find_actual_earliest_start_time_by_planed_modify(earliest_start_time, estimated_runtime,_release_time)
 
         # set start time and node for each task
         _selected_node_finish_time = actual_start_time + estimated_runtime
