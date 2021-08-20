@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-08-04 11:11:52
 LastEditors: loujiong
-LastEditTime: 2021-08-09 23:07:03
+LastEditTime: 2021-08-16 12:38:16
 Description: 
 Email:  413012592@qq.com
 '''
@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import random
 import math
 import numpy as np
+import read_in_task_graph
 
 class Application():
     def __init__(
@@ -35,70 +36,75 @@ class Application():
         self.is_accept = False
 
     def generate_task_graph_by_random_by_level(self, task_num,level_num=4,jump_num=2):
-        edge_num = rd(task_num, min(task_num * task_num, math.ceil(task_num * 1.5)))
-        level_num = min(level_num,task_num)
+        task_graph_source = 0
+        if task_graph_source == 0:
+            self.task_graph = read_in_task_graph.get_workflow()
+            task_num = self.task_graph.number_of_nodes()
+        else:
+            edge_num = rd(task_num, min(task_num * task_num, math.ceil(task_num * 1.5)))
+            level_num = min(level_num,task_num)
 
-        node_for_level = self.generate_node_for_level(task_num, level_num)
-        self.task_graph = nx.DiGraph()
-        for i in range(task_num):
-            self.task_graph.add_node(i + 1)
+            node_for_level = self.generate_node_for_level(task_num, level_num)
+            self.task_graph = nx.DiGraph()
+            for i in range(task_num):
+                self.task_graph.add_node(i + 1)
 
-# ----------------------- connect the next level---------------------------
-        # current_edge_num = 0
-        # for i in range(level_num - 1):
-        #     for j in node_for_level[i]:
-        #         self.task_graph.add_edge(j + 1, random.choice(node_for_level[i + 1]) + 1)
-        #         current_edge_num += 1
+    # ----------------------- connect the next level---------------------------
+            # current_edge_num = 0
+            # for i in range(level_num - 1):
+            #     for j in node_for_level[i]:
+            #         self.task_graph.add_edge(j + 1, random.choice(node_for_level[i + 1]) + 1)
+            #         current_edge_num += 1
 
-# ----------------------- connect the previous level---------------------------        
-        current_edge_num = 0
-        for i in range(level_num - 1):
-            for j in node_for_level[i+1]:
-                self.task_graph.add_edge(random.choice(node_for_level[i]) + 1,j + 1)
-                current_edge_num += 1
+    # ----------------------- connect the previous level---------------------------        
+            current_edge_num = 0
+            for i in range(level_num - 1):
+                for j in node_for_level[i+1]:
+                    self.task_graph.add_edge(random.choice(node_for_level[i]) + 1,j + 1)
+                    current_edge_num += 1
 
-        
-# ----------------------- connect the previous and the next level---------------------------     
-        
-        # current_edge_num = 0
-        # for i in range(level_num - 1):
-        #     for j in node_for_level[i]:
-        #         self.task_graph.add_edge(j + 1, random.choice(node_for_level[i + 1]) + 1)
-        #         current_edge_num += 1
-        # print("first try, edge_num:{0},current_edge_num:{1}".format(edge_num,current_edge_num))
-        # for i in range(1,level_num):
-        #     for j in node_for_level[i]:
-        #         if self.task_graph.in_degree(j + 1) == 0:
-        #             self.task_graph.add_edge(random.choice(node_for_level[i-1]) + 1 ,j + 1)
-        #             current_edge_num += 1
-        
-        # print("node_for_level:{0}".format(node_for_level))
+            
+    # ----------------------- connect the previous and the next level---------------------------     
+            
+            # current_edge_num = 0
+            # for i in range(level_num - 1):
+            #     for j in node_for_level[i]:
+            #         self.task_graph.add_edge(j + 1, random.choice(node_for_level[i + 1]) + 1)
+            #         current_edge_num += 1
+            # print("first try, edge_num:{0},current_edge_num:{1}".format(edge_num,current_edge_num))
+            # for i in range(1,level_num):
+            #     for j in node_for_level[i]:
+            #         if self.task_graph.in_degree(j + 1) == 0:
+            #             self.task_graph.add_edge(random.choice(node_for_level[i-1]) + 1 ,j + 1)
+            #             current_edge_num += 1
+            
+            # print("node_for_level:{0}".format(node_for_level))
 
-        # add sink and source edges to current_edge_num
-        current_edge_num += len(node_for_level[0])
-        current_edge_num += len(node_for_level[-1])
+            # add sink and source edges to current_edge_num
+            current_edge_num += len(node_for_level[0])
+            current_edge_num += len(node_for_level[-1])
 
-        # print("edge_num:{0},current_edge_num:{1}".format(edge_num,current_edge_num))
-        # print("edge list:{0}".format([(u - 1,v - 1) for u,v in self.task_graph.edges()]))
+            # print("edge_num:{0},current_edge_num:{1}".format(edge_num,current_edge_num))
+            # print("edge list:{0}".format([(u - 1,v - 1) for u,v in self.task_graph.edges()]))
 
-        test_num = 0
-        while (current_edge_num < edge_num):
-            sink_level = random.randint(1, level_num - 1)
-            source_level = sink_level - random.randint(1, jump_num)
-            source_level = max(0, source_level)
-            sink_node = random.choice(node_for_level[sink_level]) + 1
-            source_node = random.choice(node_for_level[source_level]) + 1
+            test_num = 0
+            while (current_edge_num < edge_num):
+                sink_level = random.randint(1, level_num - 1)
+                source_level = sink_level - random.randint(1, jump_num)
+                source_level = max(0, source_level)
+                sink_node = random.choice(node_for_level[sink_level]) + 1
+                source_node = random.choice(node_for_level[source_level]) + 1
 
-            if (source_node, sink_node) not in self.task_graph.edges:
-                self.task_graph.add_edge(source_node, sink_node)
-                current_edge_num += 1
+                if (source_node, sink_node) not in self.task_graph.edges:
+                    self.task_graph.add_edge(source_node, sink_node)
+                    current_edge_num += 1
 
-            test_num += 1
-            if test_num > 2000:
-                break
-        
-        # print("task list:{0}, task_num:{1}, edge_num:{2}".format(self.task_graph.nodes(),task_num,edge_num))
-        # print("-"*100)
+                test_num += 1
+                if test_num > 2000:
+                    break
+            
+            # print("task list:{0}, task_num:{1}, edge_num:{2}".format(self.task_graph.nodes(),task_num,edge_num))
+            # print("-"*100)
 
         source_node = 0
         sink_node = task_num + 1
@@ -111,7 +117,7 @@ class Application():
 
         # add weight
         for i in range(1, task_num + 1):
-            self.task_graph.nodes[i]["w"] = 1+19*random.random() #rd(3, 20)  #rd(10, 15)
+            self.task_graph.nodes[i]["w"] = 7+14*random.random() #rd(3, 20)  #rd(10, 15)
             self.task_graph.nodes[i]["latest_change_time"] = self.release_time
             self.task_graph.nodes[i]["is_scheduled"] = 0
             self.task_graph.nodes[i]["selected_node"] = -1

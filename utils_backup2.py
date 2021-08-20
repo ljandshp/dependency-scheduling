@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-04-16 13:18:37
 LastEditors: loujiong
-LastEditTime: 2021-08-10 00:36:01
+LastEditTime: 2021-08-19 16:19:08
 Description: utils file
 Email:  413012592@qq.com
 '''
@@ -15,6 +15,7 @@ import time
 import math
 import numpy as np
 import pqdict
+import read_in_task_graph
 
 class Edge():
     def __init__(self, task_concurrent_capacity, process_data_rate,
@@ -86,7 +87,6 @@ class Edge():
                 self.start_finish[cpu] = np.vstack([self.start_finish[cpu], np.array([finish_time, _end])])
             if _start < start_time:
                 self.start_finish[cpu] = np.vstack([self.start_finish[cpu], np.array([_start, start_time])])
-               
 
     def generate_plan(self, _release_time):
         self.planed_start_finish = [0 for i in range(self.task_concurrent_capacity)]
@@ -137,67 +137,72 @@ class Application():
         self.is_accept = False
 
     def generate_task_graph_by_random_by_level(self, task_num,level_num=4,jump_num=2):
-        edge_num = rd(task_num, min(task_num * task_num, math.ceil(task_num * 1.5)))
-        level_num = min(level_num,task_num)
+        task_graph_source = 0
+        if task_graph_source == 0:
+            self.task_graph = read_in_task_graph.get_workflow()
+            task_num = self.task_graph.number_of_nodes()
+        else:
+            edge_num = rd(task_num, min(task_num * task_num, math.ceil(task_num * 1.5)))
+            level_num = min(level_num,task_num)
 
-        node_for_level = self.generate_node_for_level(task_num, level_num)
-        self.task_graph = nx.DiGraph()
-        for i in range(task_num):
-            self.task_graph.add_node(i + 1)
+            node_for_level = self.generate_node_for_level(task_num, level_num)
+            self.task_graph = nx.DiGraph()
+            for i in range(task_num):
+                self.task_graph.add_node(i + 1)
 
-# ----------------------- connect the next level---------------------------
-        # current_edge_num = 0
-        # for i in range(level_num - 1):
-        #     for j in node_for_level[i]:
-        #         self.task_graph.add_edge(j + 1, random.choice(node_for_level[i + 1]) + 1)
-        #         current_edge_num += 1
+    # ----------------------- connect the next level---------------------------
+            # current_edge_num = 0
+            # for i in range(level_num - 1):
+            #     for j in node_for_level[i]:
+            #         self.task_graph.add_edge(j + 1, random.choice(node_for_level[i + 1]) + 1)
+            #         current_edge_num += 1
 
-# ----------------------- connect the previous level---------------------------        
-        current_edge_num = 0
-        for i in range(level_num - 1):
-            for j in node_for_level[i+1]:
-                self.task_graph.add_edge(random.choice(node_for_level[i]) + 1,j + 1)
-                current_edge_num += 1
+    # ----------------------- connect the previous level---------------------------        
+            current_edge_num = 0
+            for i in range(level_num - 1):
+                for j in node_for_level[i+1]:
+                    self.task_graph.add_edge(random.choice(node_for_level[i]) + 1,j + 1)
+                    current_edge_num += 1
 
-        
-# ----------------------- connect the previous and the next level---------------------------     
-        
-        # current_edge_num = 0
-        # for i in range(level_num - 1):
-        #     for j in node_for_level[i]:
-        #         self.task_graph.add_edge(j + 1, random.choice(node_for_level[i + 1]) + 1)
-        #         current_edge_num += 1
-        # print("first try, edge_num:{0},current_edge_num:{1}".format(edge_num,current_edge_num))
-        # for i in range(1,level_num):
-        #     for j in node_for_level[i]:
-        #         if self.task_graph.in_degree(j + 1) == 0:
-        #             self.task_graph.add_edge(random.choice(node_for_level[i-1]) + 1 ,j + 1)
-        #             current_edge_num += 1
-        
-        # print("node_for_level:{0}".format(node_for_level))
+            
+    # ----------------------- connect the previous and the next level---------------------------     
+            
+            # current_edge_num = 0
+            # for i in range(level_num - 1):
+            #     for j in node_for_level[i]:
+            #         self.task_graph.add_edge(j + 1, random.choice(node_for_level[i + 1]) + 1)
+            #         current_edge_num += 1
+            # print("first try, edge_num:{0},current_edge_num:{1}".format(edge_num,current_edge_num))
+            # for i in range(1,level_num):
+            #     for j in node_for_level[i]:
+            #         if self.task_graph.in_degree(j + 1) == 0:
+            #             self.task_graph.add_edge(random.choice(node_for_level[i-1]) + 1 ,j + 1)
+            #             current_edge_num += 1
+            
+            # print("node_for_level:{0}".format(node_for_level))
 
-        # add sink and source edges to current_edge_num
-        current_edge_num += len(node_for_level[0])
-        current_edge_num += len(node_for_level[-1])
+            # add sink and source edges to current_edge_num
+            current_edge_num += len(node_for_level[0])
+            current_edge_num += len(node_for_level[-1])
 
-        # print("edge_num:{0},current_edge_num:{1}".format(edge_num,current_edge_num))
-        # print("edge list:{0}".format([(u - 1,v - 1) for u,v in self.task_graph.edges()]))
+            # print("edge_num:{0},current_edge_num:{1}".format(edge_num,current_edge_num))
+            # print("edge list:{0}".format([(u - 1,v - 1) for u,v in self.task_graph.edges()]))
 
-        test_num = 0
-        while (current_edge_num < edge_num):
-            sink_level = random.randint(1, level_num - 1)
-            source_level = sink_level - random.randint(1, jump_num)
-            source_level = max(0, source_level)
-            sink_node = random.choice(node_for_level[sink_level]) + 1
-            source_node = random.choice(node_for_level[source_level]) + 1
+            test_num = 0
+            while (current_edge_num < edge_num):
+                sink_level = random.randint(1, level_num - 1)
+                source_level = sink_level - random.randint(1, jump_num)
+                source_level = max(0, source_level)
+                sink_node = random.choice(node_for_level[sink_level]) + 1
+                source_node = random.choice(node_for_level[source_level]) + 1
 
-            if (source_node, sink_node) not in self.task_graph.edges:
-                self.task_graph.add_edge(source_node, sink_node)
-                current_edge_num += 1
+                if (source_node, sink_node) not in self.task_graph.edges:
+                    self.task_graph.add_edge(source_node, sink_node)
+                    current_edge_num += 1
 
-            test_num += 1
-            if test_num > 2000:
-                break
+                test_num += 1
+                if test_num > 2000:
+                    break
 
         source_node = 0
         sink_node = task_num + 1
@@ -210,7 +215,7 @@ class Application():
 
         # add weight
         for i in range(1, task_num + 1):
-            self.task_graph.nodes[i]["w"] = 1+19*random.random() #rd(3, 20) #rd(10, 15)
+            self.task_graph.nodes[i]["w"] = 7+14*random.random() #rd(3, 20) #rd(10, 15)
             self.task_graph.nodes[i]["latest_change_time"] = self.release_time
             self.task_graph.nodes[i]["is_scheduled"] = 0
             self.task_graph.nodes[i]["selected_node"] = -1
@@ -227,9 +232,9 @@ class Application():
 
         for u, v in self.task_graph.edges():
             if u == source_node or v == sink_node:
-                self.task_graph.edges[u, v]["e"] = 1 + 6*random.random() #rd(2, 7)
+                self.task_graph.edges[u, v]["e"] = 2 + 4*random.random() #rd(2, 7)
             else:
-                self.task_graph.edges[u, v]["e"] = 1 + 6*random.random() #rd(2, 7)
+                self.task_graph.edges[u, v]["e"] = 2 + 4*random.random() #rd(2, 7)
 
     def generate_node_for_level(self, node_num, level_num):
         node_number_for_level = [[1] for i in range(level_num)]
@@ -333,6 +338,64 @@ def get_sub_deadline_list(G,remain_length_list,deadline = 10,edge_weight=1,node_
     sub_deadline_list = [0] * G.number_of_nodes()
     for i in range(G.number_of_nodes()):
         sub_deadline_list[i] = deadline*(remain_length_list[0]-remain_length_list[i]+G.nodes[i]["w"]*node_weight)/remain_length_list[0]
+    return sub_deadline_list
+
+def get_sub_deadline_list_BDAS(G,remain_length_list,edge_list,deadline = 10,edge_weight=1,node_weight=1):
+    process_data_rate_list = [edge.process_data_rate for edge in edge_list]
+    upload_data_rate = [edge.upload_data_rate for edge in edge_list]
+    level_list = [0]*G.number_of_nodes()
+    for _n in range(G.number_of_nodes()-1,-1,-1):
+        if _n == G.number_of_nodes()-1:
+            level_list[_n] = 1
+        else:
+            level_list[_n] = max([level_list[v] for _,v in G.out_edges(_n)]) + 1
+
+    level_dict = dict()
+    for index,item in enumerate(level_list):
+        level_dict.setdefault(item, []).append(index)
+    
+    ECT_list = [0]*G.number_of_nodes()
+    ECT_list[0] = 0
+
+    EST_list = [0]*G.number_of_nodes()
+    for _n in range(G.number_of_nodes()):
+        est = 0
+        for v,_ in G.in_edges(_n):
+            est = max(est,EST_list[v]+min(process_data_rate_list)*G.nodes[v]["w"]+G.edges[v,_n]["e"]*min(upload_data_rate))
+        EST_list[_n] = est
+
+    subD_list = [0]*(level_list[0]+1)
+    for level in range(level_list[0],0,-1):
+        if level == level_list[0]:
+            ECT_list[0] = 0
+        else:
+            for _n in level_dict[level]:
+                pre_subD = 0
+                for v,_ in G.in_edges(_n):
+                    pre_subD = max(pre_subD,subD_list[level_list[v]])
+                ECT_list[_n] = max(pre_subD, EST_list[_n])+ min(process_data_rate_list)*G.nodes[_n]["w"]
+        subD_list[level] = max([ECT_list[i] for i in level_dict[level]])
+    
+    alpha = 0
+    for level in range(1,level_list[0]):
+        alpha += (subD_list[level]-subD_list[level+1])*len(level_dict[level])
+    
+    df = (deadline - subD_list[1])/alpha
+
+    subd_final_list = [0]*(level_list[0]+1)
+   
+    alpha = 0
+    for level in range(level_list[0],0,-1):
+        if level == level_list[0]:
+            subd_final_list[level] = subD_list[level]
+        else:
+            alpha += (subD_list[level]-subD_list[level+1])*len(level_dict[level])*df
+            subd_final_list[level] = alpha + subD_list[level]
+
+    sub_deadline_list = [0] * G.number_of_nodes()
+    for _n in range(G.number_of_nodes()):
+        sub_deadline_list[_n] = subd_final_list[level_list[_n]]
+    
     return sub_deadline_list
 
 def get_start_sub_deadline_list(G,remain_length_list,deadline = 10):

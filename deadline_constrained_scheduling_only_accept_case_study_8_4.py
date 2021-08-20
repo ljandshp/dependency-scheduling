@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-08-04 12:41:51
 LastEditors: loujiong
-LastEditTime: 2021-08-10 11:38:03
+LastEditTime: 2021-08-11 15:47:33
 Description: 
 Email:  413012592@qq.com
 '''
@@ -129,7 +129,7 @@ def re_scheduling(is_draw=False,
     edge_list = [
         Edge.Edge(task_concurrent_capacity=1,
                    process_data_rate=process_data_rate_list[i],
-                   upload_data_rate=4.5,cost_per_mip = cost_per_mip_list[i], edge_index = i) for i in range(edge_number)
+                   upload_data_rate=3+ 3*random.random(),cost_per_mip = cost_per_mip_list[i], edge_index = i) for i in range(edge_number)
     ]
 
     _cost_per_mip_list = []
@@ -206,6 +206,7 @@ def re_scheduling(is_draw=False,
                 # unscheduled_tasks_sorted_by_remain_length[(_ap_index,_ta_index)] = (can_be_scheduled_label,application_list[_ap_index].dynamic_longest_remain_length,0-application_list[_ap_index].task_graph.nodes()[_ta_index]["current_remain_length"])
                 application_list[_ap_index].task_graph.nodes()[_ta_index]["is_scheduled_in_this_scheduling"] = 0
 
+        remained_child_number = [application_list[_release_index].task_graph.out_degree(_n) for _n in range(application_list[_release_index].task_graph.number_of_nodes())]
         #just for record
         total_len_unscheduled_tasks_list.append(len(unscheduled_tasks))
 
@@ -245,11 +246,11 @@ def re_scheduling(is_draw=False,
                 # selecting node based on the scheduler
                 is_in_deadline, selected_node, modified_a_t, selected_cpu, selected_actual_start_time = scheduler(
                     selected_task_index, _current_application, edge_list, cloud, _release_time, application_list)
-                if modified_a_t[0] == 0 and modified_a_t[1] == 11:
-                    print(selected_actual_start_time)
-                    print(_current_application.task_graph.number_of_nodes())
-                    print(modified_a_t)
-                    quit()
+                # if modified_a_t[0] == 0 and modified_a_t[1] == 11:
+                #     print(selected_actual_start_time)
+                #     print(_current_application.task_graph.number_of_nodes())
+                #     print(modified_a_t)
+                #     quit()
             interested_time[2] += time.time() - interested_time_st
 
             if selected_node == edge_number:
@@ -301,13 +302,35 @@ def re_scheduling(is_draw=False,
             # print()
             # print(selected_task_index)
             # print(modified_a_t)
+
+            for u,_ in application_list[_ap_index].task_graph.in_edges(selected_task_index):
+                remained_child_number[u] -= 1
+                if remained_child_number[u] == 0:
+                    _node =  application_list[_ap_index].task_graph.nodes[u]["selected_node"]
+                    _cpu = application_list[_ap_index].task_graph.nodes[u]["cpu"]
+                    
+                    _latest_finish_time = math.inf
+                    for _,v in _current_application.task_graph.out_edges(u):
+                        bandwidth = utils.get_bandwidth(_current_application.task_graph.nodes[u]["selected_node"],_current_application.task_graph.nodes[v]["selected_node"],edge_list,cloud)
+                        _lft = _current_application.task_graph.nodes[v]["start_time"]-_current_application.task_graph.edges[u,v]["e"]*bandwidth
+                        _latest_finish_time = min(_latest_finish_time,_lft)
+                    if _latest_finish_time < math.inf:
+                        _current_application.task_graph.nodes[u]["flexible_time"] = _latest_finish_time
+                    else:
+                        _current_application.task_graph.nodes[u]["flexible_time"] = _current_application.deadline+_current_application.release_time
+
+                    #TODO 增加子task调度完毕的task进入可供修改的task     
+                    edge_list[_node].assigned_task_since_release_time[_cpu] = np.vstack([edge_list[_node].assigned_task_since_release_time[_cpu],np.array([_ap_index, u, application_list[_ap_index].task_graph.nodes[u]['start_time'], application_list[_ap_index].task_graph.nodes[u]['finish_time'], application_list[_ap_index].task_graph.nodes[u]["flexible_time"]])])
+
+                    
+
+
             if selected_task_index == _current_application.task_graph.number_of_nodes() - 1:
                 if _current_application.task_graph.nodes[selected_task_index]["finish_time"]- _current_application.release_time <= _current_application.deadline:
                     _current_application.is_accept = True
 
                 # calculate the flexible time for each task
                 if _current_application.is_accept:
-                    
                     for _n in _current_application.task_graph.nodes():
                         _latest_finish_time = math.inf
                         for _,v in _current_application.task_graph.out_edges(_n):
@@ -359,13 +382,13 @@ def re_scheduling(is_draw=False,
                 task_number_for_each_edge[_application.task_graph.nodes[_n]["selected_node"]] += 1
                 total_flexitime[_application.task_graph.nodes[_n]["selected_node"]] += _application.task_graph.nodes[_n]["flexible_time"] - _application.task_graph.nodes[_n]["finish_time"]
     
-    for i in range(edge_number):
-        print("edge node:{0}".format(i))
-        print("cost_per_mip",edge_list[i].cost_per_mip)
-        print(task_number_for_each_edge[i])
-        print(total_flexitime[i])
-        print(total_flexitime[i]/task_number_for_each_edge[i])
-        print()
+    # for i in range(edge_number):
+    #     print("edge node:{0}".format(i))
+    #     print("cost_per_mip",edge_list[i].cost_per_mip)
+    #     print(task_number_for_each_edge[i])
+    #     print(total_flexitime[i])
+    #     print(total_flexitime[i]/task_number_for_each_edge[i])
+    #     print()
 
     accept_rate = sum([_application.is_accept for _application in application_list])/len(application_list)
 
@@ -400,31 +423,34 @@ if __name__ == '__main__':
     edge_number = 20
     random_seed = 1.2
     is_multiple = True
-    deadline_alpha = 0.5
+    deadline_alpha = 0.2
 
+    for deadline_alpha in range(2):
+        deadline_alpha = 0.2 + 0.02*deadline_alpha
+        for application_average_interval in range(100,200,10):
+            exp_num = 5
+            a_list = [0]
+            c_list = [0]
+            for _exp_num in range(exp_num):
+                random_seed = 1+0.1*_exp_num
+                _a, _c = re_scheduling(
+                    is_draw=is_draw,
+                    is_annotation=is_annotation,
+                    application_num=application_num,
+                    application_average_interval=application_average_interval,
+                    edge_number=edge_number,
+                    scheduler=utils.
+                    get_node_with_least_cost_constrained_by_start_subdeadline_without_cloud,
+                    random_seed=random_seed,
+                    is_draw_task_graph=is_draw_task_graph,
+                    is_multiple=is_multiple,
+                    deadline_alpha=deadline_alpha)
 
-    for application_average_interval in range(100,300,30):
-        exp_num = 1
-        a_list = [0]
-        c_list = [0]
-        for _exp_num in range(exp_num):
-            random_seed = 1+0.1*_exp_num
-            _a, _c = re_scheduling(
-                is_draw=is_draw,
-                is_annotation=is_annotation,
-                application_num=application_num,
-                application_average_interval=application_average_interval,
-                edge_number=edge_number,
-                scheduler=utils.
-                get_node_with_least_cost_constrained_by_start_subdeadline_without_cloud,
-                random_seed=random_seed,
-                is_draw_task_graph=is_draw_task_graph,
-                is_multiple=is_multiple,
-                deadline_alpha=deadline_alpha)
+                a_list[0]+=_a
+                c_list[0]+=_c
 
-            a_list[0]+=_a
-            c_list[0]+=_c
-
-        print(application_average_interval)
-        print([i/exp_num for i in a_list])
-        print([i/exp_num for i in c_list])
+            print("deadline_alpha",deadline_alpha)
+            print("application_average_interval",application_average_interval)
+            print([i/exp_num for i in a_list])
+            print([i/exp_num for i in c_list])
+            print()

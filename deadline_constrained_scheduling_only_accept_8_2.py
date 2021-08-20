@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-08-2 14:40:18
 LastEditors: loujiong
-LastEditTime: 2021-08-08 14:57:18
+LastEditTime: 2021-08-14 10:32:34
 Description: only accept task will be added into the start finish list
 Email:  413012592@qq.com
 '''
@@ -79,7 +79,8 @@ def re_scheduling(is_draw=False,
                   random_seed=1.11,
                   is_draw_task_graph=False,
                   is_multiple=True,
-                  deadline_alpha=1.4/7):
+                  deadline_alpha=1.4/7,
+                  base_deadline = []):
 
     # debug
     total_len_unscheduled_tasks_list = []
@@ -147,10 +148,13 @@ def re_scheduling(is_draw=False,
 
     total_application_weight = 0
     total_deadline = 0
-    for _application in application_list:
+    for application_index,_application in enumerate(application_list):
         # print()
         utils.set_tmax(_application,edge_list,cloud)
-        _application.deadline = math.ceil(deadline_alpha * _application.tmax)
+        if len(base_deadline) > 0:
+            _application.deadline = math.ceil((1+deadline_alpha) * base_deadline[application_index])
+        else:
+            _application.deadline = math.ceil(deadline_alpha * _application.tmax)
         total_deadline += _application.deadline
         _app_total_weight = sum([_application.task_graph.nodes[_t]["w"] for _t in _application.task_graph.nodes()])
         total_application_weight += _app_total_weight
@@ -372,7 +376,7 @@ def re_scheduling(is_draw=False,
         # print("remain_length_for_entry:{0}".format(application_list[_release_index].task_graph.nodes[0]["current_remain_length"]))
         # print("(task_id,select_node_id,start_time,finish_time,sub_deadline)")
         # print([(i,application_list[_release_index].task_graph.nodes[i]["selected_node"],application_list[_release_index].task_graph.nodes[i]["start_time"],application_list[_release_index].task_graph.nodes[i]["finish_time"],application_list[_release_index].task_graph.nodes[i]["sub_deadline"]+application_list[_release_index].release_time) for i in application_list[_release_index].task_graph.nodes()])
-    utils.check(application_list, edge_list, cloud)
+    utils.check(is_multiple,application_list, edge_list, cloud)
 
     # output interval_statistical for each edge node
     # print()
@@ -447,7 +451,7 @@ def re_scheduling(is_draw=False,
     # print("performance:")
     # print(_performance_list)
     # print(time.time()-all_st)
-    return(accept_rate,total_cost)
+    return(accept_rate,total_cost,application_list)
 
 if __name__ == '__main__':
     is_draw = False
@@ -466,7 +470,7 @@ if __name__ == '__main__':
         c_list = [0,0]
         for _exp_num in range(exp_num):
             random_seed = 1+0.1*_exp_num
-            _a, _c = re_scheduling(
+            _a, _c, application_list = re_scheduling(
                 is_draw=is_draw,
                 is_annotation=is_annotation,
                 application_num=application_num,
@@ -475,12 +479,18 @@ if __name__ == '__main__':
                 scheduler=utils.get_node_with_least_cost_constrained_by_subdeadline_without_cloud,
                 random_seed=random_seed,
                 is_draw_task_graph=is_draw_task_graph,
-                is_multiple=is_multiple,
-                deadline_alpha=deadline_alpha)
+                is_multiple=False,
+                deadline_alpha=deadline_alpha,
+                base_deadline = [])
             a_list[0]+=_a
             c_list[0]+=_c
 
-            _a, _c = re_scheduling(
+            base_deadline = []
+            for a in application_list:
+                _sink = a.task_graph.number_of_nodes()-1
+                base_deadline.append(a.task_graph.nodes[_sink]["finish_time"]-a.release_time)
+                
+            _a, _c,_ = re_scheduling(
                 is_draw=is_draw,
                 is_annotation=is_annotation,
                 application_num=application_num,
@@ -491,7 +501,8 @@ if __name__ == '__main__':
                 random_seed=random_seed,
                 is_draw_task_graph=is_draw_task_graph,
                 is_multiple=is_multiple,
-                deadline_alpha=deadline_alpha)
+                deadline_alpha=deadline_alpha,
+                base_deadline = base_deadline)
             a_list[1]+=_a
             c_list[1]+=_c
 

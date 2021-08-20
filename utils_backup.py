@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-04-16 13:18:37
 LastEditors: loujiong
-LastEditTime: 2021-08-09 23:47:50
+LastEditTime: 2021-08-19 19:42:32
 Description: utils file
 Email:  413012592@qq.com
 '''
@@ -16,6 +16,9 @@ import math
 import numpy as np
 import pqdict
 from collections import deque
+import read_in_task_graph
+
+min_runtime = 0.00001
 
 class Edge():
     def __init__(self, task_concurrent_capacity, process_data_rate,
@@ -27,6 +30,7 @@ class Edge():
         self.process_data_rate = process_data_rate
         self.upload_data_rate = upload_data_rate
         self.cost_per_mip = cost_per_mip
+        self.min_runtime = 0.00001
 
     def find_actual_earliest_start_time_by_planed(self, start_time, runtime, _release_time):
         min_start_time = 1000000000000000
@@ -46,6 +50,30 @@ class Edge():
                 selected_cpu = _cpu
         return (min_start_time, selected_cpu, selected_interval_key)
 
+
+    def delete_task(self,start_time,finish_time,cpu):
+        #find the interval before
+        is_interval_before = (start_time - self.planed_start_finish[cpu][:,1] < self.min_runtime) & (start_time - self.planed_start_finish[cpu][:,1] > 0- self.min_runtime)
+        interval_before_key = np.argmax(is_interval_before)
+
+        if is_interval_before[interval_before_key]:
+            start = self.planed_start_finish[cpu][interval_before_key][0]
+            self.planed_start_finish[cpu] = np.delete(self.planed_start_finish[cpu], interval_before_key, 0)
+        else:
+            start = start_time
+
+        #find the interval after
+        is_interval_after = (self.planed_start_finish[cpu][:,0]-finish_time < self.min_runtime) & (self.planed_start_finish[cpu][:,0]-finish_time > 0 - self.min_runtime)
+        interval_after_key = np.argmax(is_interval_after)
+
+        if is_interval_after[interval_after_key]:
+            finish = self.planed_start_finish[cpu][interval_after_key][1]
+            self.planed_start_finish[cpu] = np.delete(self.planed_start_finish[cpu], interval_after_key, 0)
+        else:
+            finish = finish_time
+    
+        self.planed_start_finish[cpu] = np.vstack([self.planed_start_finish[cpu], np.array([start, finish])])
+        
 
     def set_cpu_state_by_planed(self, _cpu, actual_start_time,
                                 estimated_runtime, _application_index,
@@ -89,15 +117,12 @@ class Edge():
                 self.start_finish[cpu] = np.vstack([self.start_finish[cpu], np.array([finish_time, _end])])
             if _start < start_time:
                 self.start_finish[cpu] = np.vstack([self.start_finish[cpu], np.array([_start, start_time])])
-        
-               
-
+                  
     def generate_plan(self, _release_time):
         self.planed_start_finish = [0 for i in range(self.task_concurrent_capacity)]
         for _cpu in range(self.task_concurrent_capacity):
             self.planed_start_finish[_cpu] = self.start_finish[_cpu].copy()
             self.planed_start_finish[_cpu] = self.planed_start_finish[_cpu][self.planed_start_finish[_cpu][:,1]>=_release_time,:] 
-
 
     def interval_statistical(self):
         interval_number_list = []
@@ -113,7 +138,7 @@ class Edge():
                 interval_sum += i[1] - i[0] + 1
             interval_sum_list.append(interval_sum)
         return([interval_number_list,total_length_list,interval_sum_list])
-
+        
                 
 # the speed of the cloud is fastest
 class Cloud():
@@ -143,70 +168,73 @@ class Application():
         self.is_accept = False
 
     def generate_task_graph_by_random_by_level(self, task_num,level_num=4,jump_num=2):
-        edge_num = rd(task_num, min(task_num * task_num, math.ceil(task_num * 1.5)))
-        level_num = min(level_num,task_num)
+        task_graph_source = 0
+        if task_graph_source == 0:
+            self.task_graph = read_in_task_graph.get_workflow()
+            task_num = self.task_graph.number_of_nodes()
+        else:
+            edge_num = rd(task_num, min(task_num * task_num, math.ceil(task_num * 1.5)))
+            level_num = min(level_num,task_num)
 
-        node_for_level = self.generate_node_for_level(task_num, level_num)
-        self.task_graph = nx.DiGraph()
-        for i in range(task_num):
-            self.task_graph.add_node(i + 1)
+            node_for_level = self.generate_node_for_level(task_num, level_num)
+            self.task_graph = nx.DiGraph()
+            for i in range(task_num):
+                self.task_graph.add_node(i + 1)
 
-# ----------------------- connect the next level---------------------------
-        # current_edge_num = 0
-        # for i in range(level_num - 1):
-        #     for j in node_for_level[i]:
-        #         self.task_graph.add_edge(j + 1, random.choice(node_for_level[i + 1]) + 1)
-        #         current_edge_num += 1
+    # ----------------------- connect the next level---------------------------
+            # current_edge_num = 0
+            # for i in range(level_num - 1):
+            #     for j in node_for_level[i]:
+            #         self.task_graph.add_edge(j + 1, random.choice(node_for_level[i + 1]) + 1)
+            #         current_edge_num += 1
 
-# ----------------------- connect the previous level---------------------------        
-        current_edge_num = 0
-        for i in range(level_num - 1):
-            for j in node_for_level[i+1]:
-                self.task_graph.add_edge(random.choice(node_for_level[i]) + 1,j + 1)
-                current_edge_num += 1
+    # ----------------------- connect the previous level---------------------------        
+            current_edge_num = 0
+            for i in range(level_num - 1):
+                for j in node_for_level[i+1]:
+                    self.task_graph.add_edge(random.choice(node_for_level[i]) + 1,j + 1)
+                    current_edge_num += 1
 
+            
+    # ----------------------- connect the previous and the next level---------------------------     
+            
+            # current_edge_num = 0
+            # for i in range(level_num - 1):
+            #     for j in node_for_level[i]:
+            #         self.task_graph.add_edge(j + 1, random.choice(node_for_level[i + 1]) + 1)
+            #         current_edge_num += 1
+            # print("first try, edge_num:{0},current_edge_num:{1}".format(edge_num,current_edge_num))
+            # for i in range(1,level_num):
+            #     for j in node_for_level[i]:
+            #         if self.task_graph.in_degree(j + 1) == 0:
+            #             self.task_graph.add_edge(random.choice(node_for_level[i-1]) + 1 ,j + 1)
+            #             current_edge_num += 1
+            
+            # print("node_for_level:{0}".format(node_for_level))
+
+            # add sink and source edges to current_edge_num
+            current_edge_num += len(node_for_level[0])
+            current_edge_num += len(node_for_level[-1])
+
+            # print("edge_num:{0},current_edge_num:{1}".format(edge_num,current_edge_num))
+            # print("edge list:{0}".format([(u - 1,v - 1) for u,v in self.task_graph.edges()]))
+
+            test_num = 0
+            while (current_edge_num < edge_num):
+                sink_level = random.randint(1, level_num - 1)
+                source_level = sink_level - random.randint(1, jump_num)
+                source_level = max(0, source_level)
+                sink_node = random.choice(node_for_level[sink_level]) + 1
+                source_node = random.choice(node_for_level[source_level]) + 1
+
+                if (source_node, sink_node) not in self.task_graph.edges:
+                    self.task_graph.add_edge(source_node, sink_node)
+                    current_edge_num += 1
+
+                test_num += 1
+                if test_num > 2000:
+                    break
         
-# ----------------------- connect the previous and the next level---------------------------     
-        
-        # current_edge_num = 0
-        # for i in range(level_num - 1):
-        #     for j in node_for_level[i]:
-        #         self.task_graph.add_edge(j + 1, random.choice(node_for_level[i + 1]) + 1)
-        #         current_edge_num += 1
-        # print("first try, edge_num:{0},current_edge_num:{1}".format(edge_num,current_edge_num))
-        # for i in range(1,level_num):
-        #     for j in node_for_level[i]:
-        #         if self.task_graph.in_degree(j + 1) == 0:
-        #             self.task_graph.add_edge(random.choice(node_for_level[i-1]) + 1 ,j + 1)
-        #             current_edge_num += 1
-        
-        # print("node_for_level:{0}".format(node_for_level))
-
-        # add sink and source edges to current_edge_num
-        current_edge_num += len(node_for_level[0])
-        current_edge_num += len(node_for_level[-1])
-
-        # print("edge_num:{0},current_edge_num:{1}".format(edge_num,current_edge_num))
-        # print("edge list:{0}".format([(u - 1,v - 1) for u,v in self.task_graph.edges()]))
-
-        test_num = 0
-        while (current_edge_num < edge_num):
-            sink_level = random.randint(1, level_num - 1)
-            source_level = sink_level - random.randint(1, jump_num)
-            source_level = max(0, source_level)
-            sink_node = random.choice(node_for_level[sink_level]) + 1
-            source_node = random.choice(node_for_level[source_level]) + 1
-
-            if (source_node, sink_node) not in self.task_graph.edges:
-                self.task_graph.add_edge(source_node, sink_node)
-                current_edge_num += 1
-
-            test_num += 1
-            if test_num > 2000:
-                break
-        
-        # print("task list:{0}, task_num:{1}, edge_num:{2}".format(self.task_graph.nodes(),task_num,edge_num))
-        # print("-"*100)
 
         source_node = 0
         sink_node = task_num + 1
@@ -219,7 +247,7 @@ class Application():
 
         # add weight
         for i in range(1, task_num + 1):
-            self.task_graph.nodes[i]["w"] = 1+19*random.random() #rd(3, 20) #rd(10, 15)
+            self.task_graph.nodes[i]["w"] = 7+14*random.random() #rd(3, 20) #rd(10, 15)
             self.task_graph.nodes[i]["latest_change_time"] = self.release_time
             self.task_graph.nodes[i]["is_scheduled"] = 0
             self.task_graph.nodes[i]["selected_node"] = -1
@@ -236,9 +264,9 @@ class Application():
 
         for u, v in self.task_graph.edges():
             if u == source_node or v == sink_node:
-                self.task_graph.edges[u, v]["e"] = 1 + 6*random.random()#rd(2, 7)
+                self.task_graph.edges[u, v]["e"] = 2 + 4*random.random()#rd(2, 7)
             else:
-                self.task_graph.edges[u, v]["e"] = 1 + 6*random.random()#rd(2, 7)
+                self.task_graph.edges[u, v]["e"] = 2 + 4*random.random()#rd(2, 7)
 
     def generate_node_for_level(self, node_num, level_num):
         node_number_for_level = [[1] for i in range(level_num)]
@@ -528,10 +556,23 @@ def check(is_multiple:bool, application_list, edge_list, cloud):
     # first check the precedence constraint
     for application_index, application in enumerate(application_list):
         for _n in application.task_graph.nodes():
+            if application.task_graph.nodes[_n]["selected_node"] == len(edge_list):
+                runtime = application.task_graph.nodes[_n]["w"]*cloud.process_data_rate
+            else:
+                runtime = application.task_graph.nodes[_n]["w"]*edge_list[application.task_graph.nodes[_n]["selected_node"]].process_data_rate
+            if application.task_graph.nodes[_n]["start_time"] + runtime > application.task_graph.nodes[_n]["finish_time"]:
+                print("runtime length error")
+                exit(1)
+            if application.task_graph.nodes[_n]["start_time"] < application.release_time:
+                print("release time error")
+                exit(1)
             for u,_ in application.task_graph.in_edges(_n):
                 bandwidth = get_bandwidth(application.task_graph.nodes[u]["selected_node"],application.task_graph.nodes[_n]["selected_node"], edge_list, cloud)
-                if application.task_graph.nodes[u]["finish_time"]+bandwidth*application.task_graph.edges[u,_n]["e"]>application.task_graph.nodes[_n]["start_time"]:
+                if application.task_graph.nodes[u]["finish_time"]+bandwidth*application.task_graph.edges[u,_n]["e"]-application.task_graph.nodes[_n]["start_time"]>0.00000001:
                     print("precedence error")
+                    print(application.task_graph.nodes[u]["finish_time"])
+                    print(bandwidth*application.task_graph.edges[u,_n]["e"])
+                    print(application.task_graph.nodes[_n]["start_time"])
                     exit(1)
 
     if is_multiple:
@@ -563,9 +604,9 @@ def check(is_multiple:bool, application_list, edge_list, cloud):
                         print("same task fi_time st time error")
                         print(st_time,fi_time)
                         quit()
-                    if st_time < fi:
+                    if st_time+ 0.00000001< fi:
                         print("cross task fi_time st time error")
-                        print(fi,st_time,fi_time)
+                        print(st, fi,st_time,fi_time)
                         print(node_cpu)
                         print("last application-task: {0}-{1}".format(_a_i,_t_i))
                         print("current application-task: {0}-{1}".format(application_index,task_index))
@@ -653,7 +694,7 @@ def get_node_with_least_cost_constrained_by_subdeadline_without_cloud(selected_t
     return is_in_deadline,selected_node
 
 
-def get_node_with_least_cost_constrained_by_start_subdeadline_without_cloud(selected_task_index, _application,
+def get_node_with_least_cost_constrained_by_start_subdeadline_without_cloud(selected_task_index, _application:Application,
                                    edge_list, cloud, _release_time):
     edge_number = len(edge_list)
     finish_time_list = []
@@ -701,7 +742,7 @@ def get_node_with_least_cost_constrained_by_start_subdeadline_without_cloud(sele
         overdue_start_deadline.append(_overdue_start_deadline)
 
     node_shuffle_index = list(range(edge_number))
-    random.shuffle(node_shuffle_index)
+    # random.shuffle(node_shuffle_index)
     cost_per_mip_list = [i.cost_per_mip for i in edge_list]
     selected_node = -1
     min_cost = 10000
@@ -714,11 +755,17 @@ def get_node_with_least_cost_constrained_by_start_subdeadline_without_cloud(sele
         if cost_per_mip_list[i] == min_cost and is_in_deadline[i] and finish_time_list[i] < ft:
             selected_node = i
             min_cost = cost_per_mip_list[i]
-            ft = finish_time_list[i]
+            ft = finish_time_list[i]   
 
-    is_in_deadline =  selected_node >= 0 
+    is_in_deadline =  selected_node >= 0
+
     # if no node satisfy the sub_deadline
     overdue_start_deadline = [overdue_start_deadline[i] for i in node_shuffle_index]
+
+    print("application-{0},task-{1}".format(_application.application_index,selected_task_index))
+    print("is_in_deadline:{0}".format(is_in_deadline))
+    print("minimal sub lateness:{0}".format(min(overdue_start_deadline)))
+    
     if selected_node < 0:
         selected_node = node_shuffle_index[np.argmin(np.array(overdue_start_deadline))]
      
@@ -817,14 +864,16 @@ def schedule_with_cloud(application,edge_list,cloud):
         if not is_in_edge[_n]:
             application.task_graph.nodes[_n]["selected_node"] = cloud_number
             application.task_graph.nodes[_n]["cpu"] = 0
-            _start_time = -1
-            for u,_ in application.task_graph.in_edges(_n):
-                if is_in_edge[u]:
-                    _start_time = max(_start_time,application.task_graph.nodes[u]["finish_time"]+cloud.data_rate*application.task_graph.edges[u,_n]["e"])
-                else:
-                    _start_time = max(_start_time,application.task_graph.nodes[u]["finish_time"])
-            application.task_graph.nodes[_n]["start_time"] = _start_time
-            application.task_graph.nodes[_n]["finish_time"] = _start_time + application.task_graph.nodes[_n]["w"] * cloud.process_data_rate
+            # _start_time = -1
+            # for u,_ in application.task_graph.in_edges(_n):
+            #     if is_in_edge[u]:
+            #         _start_time = max(_start_time,application.task_graph.nodes[u]["finish_time"]+cloud.data_rate*application.task_graph.edges[u,_n]["e"])
+            #     else:
+            #         _start_time = max(_start_time,application.task_graph.nodes[u]["finish_time"])
+            # application.task_graph.nodes[_n]["start_time"] = _start_time
+            # application.task_graph.nodes[_n]["finish_time"] = _start_time + application.task_graph.nodes[_n]["w"] * cloud.process_data_rate
+            application.task_graph.nodes[_n]["start_time"] = application.release_time + application.deadline - offloading_time_list[_n]
+            application.task_graph.nodes[_n]["finish_time"] = application.task_graph.nodes[_n]["start_time"] + application.task_graph.nodes[_n]["w"] * cloud.process_data_rate
 
     _sink_start_time = 0
     for u,_ in application.task_graph.in_edges(sink):
@@ -845,6 +894,146 @@ def schedule_with_cloud(application,edge_list,cloud):
     application.is_accept = application.task_graph.nodes[sink]["finish_time"] - application.release_time <= application.deadline
            
     return True 
+
+def adjust_task_start_finish_time(application:Application,edge_list,cloud:Cloud):
+    global min_runtime
+    node_list = [(_n,application.task_graph.nodes[_n]["start_time"]) for _n in application.task_graph.nodes()]
+    node_list.sort(key = lambda x:0-x[1])
+    node_list = [i[0] for i in node_list]
+    # print(node_list)
+    # print(application.is_accept)
+    for _n in node_list:
+        selected_node = application.task_graph.nodes[_n]["selected_node"]
+        if _n == 0 or selected_node == len(edge_list):
+            continue
+        earliest_start_time = application.task_graph.nodes[_n]["start_time"]
+        if application.application_index == 191 and (_n == 6 or _n==16):
+            print(application.task_graph.nodes[_n]["start_time"],application.task_graph.nodes[_n]["finish_time"])
+        latest_finish_time = math.inf
+        for _,v in application.task_graph.out_edges(_n):
+            bandwidth = get_bandwidth(selected_node, application.task_graph.nodes[v]["selected_node"], edge_list, cloud)
+            _finish_time = application.task_graph.nodes[v]["start_time"]-bandwidth*application.task_graph.edges[_n,v]["e"]
+            latest_finish_time = min(latest_finish_time,_finish_time)
+        latest_start_time = latest_finish_time - application.task_graph.nodes[_n]["w"]*edge_list[selected_node].process_data_rate
+        start_sub_deadline = application.task_graph.nodes[_n]["start_sub_deadline"] + application.release_time
+        #find the follow up task
+        # print("latest_finish_time",latest_finish_time)
+        if _n == application.task_graph.number_of_nodes()-1:
+            actual_start_time = min(start_sub_deadline,latest_start_time)
+        else:
+            cpu = application.task_graph.nodes[_n]["cpu"] 
+            is_interval_after = (edge_list[selected_node].planed_start_finish[cpu][:,0]-application.task_graph.nodes[_n]["finish_time"] < min_runtime) & (edge_list[selected_node].planed_start_finish[cpu][:,0]-application.task_graph.nodes[_n]["finish_time"] > 0 - min_runtime)
+            interval_after_key = np.argmax(is_interval_after)
+            if is_interval_after[interval_after_key]:
+                follow_start_time_constraint = edge_list[selected_node].planed_start_finish[cpu][interval_after_key][1]-application.task_graph.nodes[_n]["w"]*edge_list[selected_node].process_data_rate
+            else:
+                follow_start_time_constraint = application.task_graph.nodes[_n]["start_time"]
+            # print("start_sub_deadline,latest_start_time,follow_start_time_constraint",start_sub_deadline,latest_start_time,follow_start_time_constraint)
+            actual_start_time = min(start_sub_deadline,latest_start_time,follow_start_time_constraint)
+        # print(actual_start_time)
+        actual_start_time = max(actual_start_time,earliest_start_time)
+        # if application.application_index == 191 and (_n == 6 or _n==16):
+        #     print(edge_list[selected_node].planed_start_finish[cpu])
+        if actual_start_time > earliest_start_time:
+            if _n == application.task_graph.number_of_nodes()-1:
+                application.task_graph.nodes[_n]["start_time"] = actual_start_time
+                application.task_graph.nodes[_n]["finish_time"] = actual_start_time + application.task_graph.nodes[_n]["w"]*edge_list[selected_node].process_data_rate
+            else:
+                edge_list[selected_node].delete_task(application.task_graph.nodes[_n]["start_time"],application.task_graph.nodes[_n]["finish_time"],application.task_graph.nodes[_n]["cpu"])
+                # if application.application_index == 191 and (_n == 6 or _n==16):
+                #     print(edge_list[selected_node].planed_start_finish[cpu][:,1] - np.maximum(actual_start_time,edge_list[selected_node].planed_start_finish[cpu][:,0]))
+                #     print(application.task_graph.nodes[_n]["w"]*edge_list[selected_node].process_data_rate)
+                
+                is_in_interval= (edge_list[selected_node].planed_start_finish[cpu][:,0] <= actual_start_time) & (edge_list[selected_node].planed_start_finish[cpu][:,1] >= actual_start_time)
+                selected_interval_key = np.argmax(is_in_interval)
+                
+                # if application.application_index == 191 and (_n == 6 or _n==16):
+                #     print(actual_start_time)
+                #     print(actual_start_time+application.task_graph.nodes[_n]["w"]*edge_list[selected_node].process_data_rate)
+                #     print(edge_list[selected_node].planed_start_finish[cpu])
+                #     print(edge_list[selected_node].planed_start_finish[cpu][selected_interval_key])
+                edge_list[selected_node].set_cpu_state_by_planed(cpu, actual_start_time,
+                                                            application.task_graph.nodes[_n]["w"]*edge_list[selected_node].process_data_rate,
+                                                            application.application_index,
+                                                            _n,
+                                                            selected_interval_key)
+
+                #last change
+                application.task_graph.nodes[_n]["start_time"] = actual_start_time
+                application.task_graph.nodes[_n]["finish_time"] = actual_start_time + application.task_graph.nodes[_n]["w"]*edge_list[selected_node].process_data_rate
+        # if application.application_index == 191 and (_n == 6 or _n==16):
+        #     print(edge_list[selected_node].planed_start_finish[cpu])
+        # if application.application_index == 191 and (_n == 6 or _n==16):
+        #     print(earliest_start_time,application.task_graph.nodes[_n]["start_time"],application.task_graph.nodes[_n]["start_sub_deadline"]+ application.release_time)
+        #     # quit()
+        #     print()
+
+    return
+
+def adjust(application:Application,edge_list,cloud):
+    for _n in range(application.task_graph.number_of_nodes()):
+        # only for edge task
+        original_node = application.task_graph.nodes[_n]["selected_node"]
+        if _n == 0 or _n == application.task_graph.number_of_nodes()-1:
+            continue
+        # if original_node == len(edge_list):
+        #     continue
+
+        if original_node < len(edge_list):
+            min_cost_per_mip = edge_list[original_node].cost_per_mip
+        else:
+            min_cost_per_mip = cloud.cost_per_mip
+
+        changed_node = -1
+        changed_cpu = -1
+        changed_selected_interval_key = -1
+        changed_start_time = -1
+        changed_finish_time = -1
+
+        # find cheapest Substituted node
+        for edge_index in range(len(edge_list)):
+            if edge_index != original_node:
+                _latest_start_time = 0
+                for u,_ in application.task_graph.in_edges(_n):
+                    bandwidth = get_bandwidth(application.task_graph.nodes[u]["selected_node"], edge_index, edge_list, cloud)
+                    _latest_start_time = max(_latest_start_time,application.task_graph.nodes[u]["finish_time"]+bandwidth*application.task_graph.edges[u,_n]["e"])
+                runtime = application.task_graph.nodes[_n]["w"]*edge_list[edge_index].process_data_rate
+                _release_time = application.release_time
+                actual_start_time, _cpu, selected_interval_key = edge_list[edge_index].find_actual_earliest_start_time_by_planed(_latest_start_time, runtime, _release_time)
+                actual_finish_time = actual_start_time + runtime
+                _can_be_assigned = True
+                for _,v in application.task_graph.out_edges(_n):
+                    bandwidth = get_bandwidth(edge_index, application.task_graph.nodes[v]["selected_node"], edge_list, cloud)
+                    if actual_finish_time + bandwidth*application.task_graph.edges[_n,v]["e"] > application.task_graph.nodes[v]["start_time"]:
+                        _can_be_assigned = False
+                if _can_be_assigned:
+                    if min_cost_per_mip > edge_list[edge_index].cost_per_mip:
+                        min_cost_per_mip = edge_list[edge_index].cost_per_mip
+                        changed_node = edge_index
+                        changed_cpu = _cpu
+                        changed_selected_interval_key = selected_interval_key
+                        changed_start_time = actual_start_time
+                        changed_finish_time = actual_finish_time
+        
+        if changed_node != -1:
+            #first delete interval
+            if original_node < len(edge_list):
+                edge_list[original_node].delete_task(application.task_graph.nodes[_n]["start_time"],application.task_graph.nodes[_n]["finish_time"],application.task_graph.nodes[_n]["cpu"])
+
+            # then add interval
+            edge_list[changed_node].set_cpu_state_by_planed(changed_cpu, changed_start_time,
+                                                       changed_finish_time - changed_start_time,
+                                                       application.application_index,
+                                                       _n,
+                                                       changed_selected_interval_key)
+
+            #last change
+            application.task_graph.nodes[_n]["start_time"] = changed_start_time
+            application.task_graph.nodes[_n]["finish_time"] = changed_finish_time
+            application.task_graph.nodes[_n]["cpu"] = changed_cpu
+            application.task_graph.nodes[_n]["selected_node"] = changed_node
+
+    return
 
 def get_bandwidth(node1,node2, edge_list, cloud):
     cloud_number = len(edge_list)

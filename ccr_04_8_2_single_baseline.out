@@ -1,0 +1,10 @@
+deadline_alpha:0.0application_average_interval:150deadline_alpha:0.0
+application_average_interval:150
+[0.0, 0.105]
+[0.0, 595678.686723293]
+[0.0, 5673130.34920535]
+deadline_alpha:0.05
+application_average_interval:150
+[0.0, 0.33]
+[0.0, 1847799.0551500216]
+[0.0, 5599391.076042508]
