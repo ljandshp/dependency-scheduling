@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-08-04 12:41:51
 LastEditors: loujiong
-LastEditTime: 2021-08-11 12:54:13
+LastEditTime: 2021-08-11 15:47:33
 Description: 
 Email:  413012592@qq.com
 '''
@@ -102,7 +102,7 @@ def re_scheduling(is_draw=False,
         release_time += random.expovariate(1 / application_average_interval)
     application_list = [
         Application.Application(release_time=release_time_list[i],
-                          task_num=rd(7, 40),
+                          task_num=rd(10, 20),
                           release_node=rd(0, edge_number - 1),application_index = i)
         for i in range(application_num)
     ]
@@ -206,6 +206,7 @@ def re_scheduling(is_draw=False,
                 # unscheduled_tasks_sorted_by_remain_length[(_ap_index,_ta_index)] = (can_be_scheduled_label,application_list[_ap_index].dynamic_longest_remain_length,0-application_list[_ap_index].task_graph.nodes()[_ta_index]["current_remain_length"])
                 application_list[_ap_index].task_graph.nodes()[_ta_index]["is_scheduled_in_this_scheduling"] = 0
 
+        remained_child_number = [application_list[_release_index].task_graph.out_degree(_n) for _n in range(application_list[_release_index].task_graph.number_of_nodes())]
         #just for record
         total_len_unscheduled_tasks_list.append(len(unscheduled_tasks))
 
@@ -301,13 +302,35 @@ def re_scheduling(is_draw=False,
             # print()
             # print(selected_task_index)
             # print(modified_a_t)
+
+            for u,_ in application_list[_ap_index].task_graph.in_edges(selected_task_index):
+                remained_child_number[u] -= 1
+                if remained_child_number[u] == 0:
+                    _node =  application_list[_ap_index].task_graph.nodes[u]["selected_node"]
+                    _cpu = application_list[_ap_index].task_graph.nodes[u]["cpu"]
+                    
+                    _latest_finish_time = math.inf
+                    for _,v in _current_application.task_graph.out_edges(u):
+                        bandwidth = utils.get_bandwidth(_current_application.task_graph.nodes[u]["selected_node"],_current_application.task_graph.nodes[v]["selected_node"],edge_list,cloud)
+                        _lft = _current_application.task_graph.nodes[v]["start_time"]-_current_application.task_graph.edges[u,v]["e"]*bandwidth
+                        _latest_finish_time = min(_latest_finish_time,_lft)
+                    if _latest_finish_time < math.inf:
+                        _current_application.task_graph.nodes[u]["flexible_time"] = _latest_finish_time
+                    else:
+                        _current_application.task_graph.nodes[u]["flexible_time"] = _current_application.deadline+_current_application.release_time
+
+                    #TODO 增加子task调度完毕的task进入可供修改的task     
+                    edge_list[_node].assigned_task_since_release_time[_cpu] = np.vstack([edge_list[_node].assigned_task_since_release_time[_cpu],np.array([_ap_index, u, application_list[_ap_index].task_graph.nodes[u]['start_time'], application_list[_ap_index].task_graph.nodes[u]['finish_time'], application_list[_ap_index].task_graph.nodes[u]["flexible_time"]])])
+
+                    
+
+
             if selected_task_index == _current_application.task_graph.number_of_nodes() - 1:
                 if _current_application.task_graph.nodes[selected_task_index]["finish_time"]- _current_application.release_time <= _current_application.deadline:
                     _current_application.is_accept = True
 
                 # calculate the flexible time for each task
                 if _current_application.is_accept:
-                    
                     for _n in _current_application.task_graph.nodes():
                         _latest_finish_time = math.inf
                         for _,v in _current_application.task_graph.out_edges(_n):
@@ -402,10 +425,10 @@ if __name__ == '__main__':
     is_multiple = True
     deadline_alpha = 0.2
 
-    for deadline_alpha in range(10):
+    for deadline_alpha in range(2):
         deadline_alpha = 0.2 + 0.02*deadline_alpha
-        for application_average_interval in range(100,300,20):
-            exp_num = 3
+        for application_average_interval in range(100,200,10):
+            exp_num = 5
             a_list = [0]
             c_list = [0]
             for _exp_num in range(exp_num):

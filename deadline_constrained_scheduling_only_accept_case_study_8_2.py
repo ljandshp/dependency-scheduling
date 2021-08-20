@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-08-02 15:36:31
 LastEditors: loujiong
-LastEditTime: 2021-08-11 21:29:31
+LastEditTime: 2021-08-19 17:25:39
 Description: 
 Email:  413012592@qq.com
 '''
@@ -17,6 +17,7 @@ import math
 import numpy as np
 import pqdict
 import utils_backup
+import sys, getopt
 
 np.set_printoptions(suppress=True)
 
@@ -30,7 +31,8 @@ def re_scheduling(is_draw=False,
                   random_seed=1.11,
                   is_draw_task_graph=False,
                   is_multiple=True,
-                  deadline_alpha=1.4/7):
+                  deadline_alpha=1.4/7,
+                  base_deadline = []):
 
     # debug
     total_len_unscheduled_tasks_list = []
@@ -51,7 +53,7 @@ def re_scheduling(is_draw=False,
         release_time_list.append(release_time)
         release_time += random.expovariate(1 / application_average_interval)
     application_list = [
-        utils.Application(release_time=release_time_list[i], task_num=rd(7, 40),
+        utils.Application(release_time=release_time_list[i], task_num=rd(10, 20),
                           release_node=rd(0, edge_number - 1), application_index = i)
         for i in range(application_num)
     ]
@@ -94,9 +96,12 @@ def re_scheduling(is_draw=False,
 
     total_application_weight = 0
     total_deadline = 0
-    for _application in application_list:
+    for application_index,_application in enumerate(application_list):
         utils.set_tmax(_application,edge_list,cloud)
-        _application.deadline = math.ceil(deadline_alpha * _application.tmax)
+        if len(base_deadline) > 0:
+            _application.deadline = math.ceil((1+deadline_alpha) * base_deadline[application_index])
+        else:
+            _application.deadline = math.ceil(deadline_alpha * _application.tmax)
         total_deadline += _application.deadline
         _app_total_weight = sum([_application.task_graph.nodes[_t]["w"] for _t in _application.task_graph.nodes()])
         total_application_weight += _app_total_weight
@@ -133,6 +138,9 @@ def re_scheduling(is_draw=False,
 
         # generate sub_deadline for each task
         sub_deadline_list = utils.get_sub_deadline_list(_application.task_graph,remain_length_list,deadline = _application.deadline,edge_weight=edge_weight,node_weight=node_weight)
+        # print(sub_deadline_list)
+        # sub_deadline_list = utils.get_sub_deadline_list_BDAS(_application.task_graph,remain_length_list,edge_list,deadline = _application.deadline,edge_weight=edge_weight,node_weight=node_weight)
+        # print(sub_deadline_list)
         start_sub_deadline_list = utils.get_start_sub_deadline_list(_application.task_graph,remain_length_list,deadline = _application.deadline)
         
         for _t in _application.task_graph.nodes():
@@ -320,28 +328,40 @@ def re_scheduling(is_draw=False,
         _performance_list.append((_edge_index,_edge_node.process_data_rate))
 
     # print(time.time()-all_st)
-    return(accept_rate,total_cost)
+    print("total_application_weight:{0}".format(total_application_weight))
+    print("edge_weight:{0}, node_weight:{1}".format(edge_weight,node_weight))
+    return(accept_rate,total_cost,application_list)
 
 if __name__ == '__main__':
-    is_draw = True
+    resultfile = ''
+    try:
+      opts, args = getopt.getopt(sys.argv[1:],"hi:o:",["ifile=","ofile="])
+    except getopt.GetoptError:
+      print ('test.py -i <inputfile> -o <outputfile>')
+      sys.exit(2)
+    for opt, arg in opts:
+        if opt in ("-o", "--ofile"):
+            resultfile = arg
+         
+    is_draw = False
     is_annotation = True
     is_draw_task_graph = False
-    application_num = 30
+    application_num = 200
     application_average_interval = 120
     edge_number = 20
     random_seed = 1.2
-    is_multiple = True
+    is_multiple = False
     deadline_alpha = 0.2
 
-    for deadline_alpha in range(10):
-        deadline_alpha = 0.2 + 0.01*deadline_alpha
-        for application_average_interval in range(100,300,20):
-            exp_num = 3
+    for application_average_interval in range(150,550,100):
+        for deadline_alpha in range(10):
+            deadline_alpha = 0 + 0.05*deadline_alpha
+            exp_num = 1
             a_list = [0,0]
             c_list = [0,0]
             for _exp_num in range(exp_num):
                 random_seed = 1+0.1*_exp_num
-                _a, _c = re_scheduling(
+                _a, _c, application_list = re_scheduling(
                     is_draw=is_draw,
                     is_annotation=is_annotation,
                     application_num=application_num,
@@ -350,12 +370,18 @@ if __name__ == '__main__':
                     scheduler=utils.get_node_with_earliest_finish_time_without_cloud,
                     random_seed=random_seed,
                     is_draw_task_graph=is_draw_task_graph,
-                    is_multiple=is_multiple,
-                    deadline_alpha=deadline_alpha)
+                    is_multiple=False,
+                    deadline_alpha=deadline_alpha,
+                    base_deadline = [])
                 a_list[0]+=_a
                 c_list[0]+=_c
-                exit(0)
-                _a, _c = re_scheduling(
+
+                base_deadline = []
+                for a in application_list:
+                    _sink = a.task_graph.number_of_nodes()-1
+                    base_deadline.append(a.task_graph.nodes[_sink]["finish_time"]-a.release_time)
+                    
+                _a, _c, _ = re_scheduling(
                     is_draw=is_draw,
                     is_annotation=is_annotation,
                     application_num=application_num,
@@ -366,7 +392,8 @@ if __name__ == '__main__':
                     random_seed=random_seed,
                     is_draw_task_graph=is_draw_task_graph,
                     is_multiple=is_multiple,
-                    deadline_alpha=deadline_alpha)
+                    deadline_alpha=deadline_alpha,
+                    base_deadline = base_deadline)
                 a_list[1]+=_a
                 c_list[1]+=_c
 
@@ -375,5 +402,12 @@ if __name__ == '__main__':
             print(application_average_interval)
             print([i/exp_num for i in a_list])
             print([i/exp_num for i in c_list])
+            print([c_list[i]/(a_list[i]+0.00000000001) for i in range(len(a_list))])
             print()
-            break
+            if resultfile != '':
+                with open(resultfile,mode="a") as f:
+                    f.write("deadline_alpha:{0}\n".format(deadline_alpha))
+                    f.write("application_average_interval:{0}\n".format(application_average_interval))
+                    f.write(str([i/exp_num for i in a_list])+"\n")
+                    f.write(str([i/exp_num for i in c_list])+"\n")
+                    f.write(str([c_list[i]/(a_list[i]+0.00000000001) for i in range(len(a_list))])+"\n")
