@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-04-16 16:18:15
 LastEditors: loujiong
-LastEditTime: 2021-08-08 21:33:46
+LastEditTime: 2021-08-11 21:00:38
 Description: draw task graph
 Email:  413012592@qq.com
 '''
@@ -77,8 +77,8 @@ def get_layered_pos(G):
 def draw(G, is_save=True, _application_index=0):
     pos, edge_rad, edge_pos = get_layered_pos(G)
     nx.draw_networkx_nodes(G, pos)
-    labels = {i: (i, G.nodes[i]["w"]) for i in G.nodes()}
-    edge_labels = {(u, v): (G.edges[u, v]["e"]) for u, v in G.edges()}
+    labels = {i: (i, round(G.nodes[i]["w"],1)) for i in G.nodes()}
+    edge_labels = {(u, v): (round(G.edges[u, v]["e"],1)) for u, v in G.edges()}
     nx.draw_networkx_labels(G, pos, labels, font_size=8)
     # print(edge_labels)
     for e in edge_pos:
@@ -136,8 +136,8 @@ def draw2(A, is_save=True, _application_index=0, current_task_index = 0):
     nx.draw_networkx_nodes(G, pos,nodelist=current_task_list,node_color="red")
 
     
-    labels = {i: (i, G.nodes[i]["w"]) for i in G.nodes()}
-    edge_labels = {(u, v): (G.edges[u, v]["e"]) for u, v in G.edges()}
+    labels = {i: (i, round(G.nodes[i]["w"],2)) for i in G.nodes()}
+    edge_labels = {(u, v): (round(G.edges[u, v]["e"],2)) for u, v in G.edges()}
     nx.draw_networkx_labels(G, pos, labels, font_size=8)
     # print(edge_labels)
     for e in edge_pos:

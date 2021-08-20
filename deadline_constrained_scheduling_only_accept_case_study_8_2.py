@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-08-02 15:36:31
 LastEditors: loujiong
-LastEditTime: 2021-08-10 00:49:58
+LastEditTime: 2021-08-11 21:29:31
 Description: 
 Email:  413012592@qq.com
 '''
@@ -51,7 +51,7 @@ def re_scheduling(is_draw=False,
         release_time_list.append(release_time)
         release_time += random.expovariate(1 / application_average_interval)
     application_list = [
-        utils.Application(release_time=release_time_list[i], task_num=rd(10, 20),
+        utils.Application(release_time=release_time_list[i], task_num=rd(7, 40),
                           release_node=rd(0, edge_number - 1), application_index = i)
         for i in range(application_num)
     ]
@@ -78,7 +78,7 @@ def re_scheduling(is_draw=False,
     edge_list = [
         utils.Edge(task_concurrent_capacity=1,
                    process_data_rate=process_data_rate_list[i],
-                   upload_data_rate=4.5,cost_per_mip = cost_per_mip_list[i]) for i in range(edge_number)
+                   upload_data_rate=3+ 3*random.random(),cost_per_mip = cost_per_mip_list[i]) for i in range(edge_number)
     ]
 
     _cost_per_mip_list = []
@@ -323,51 +323,57 @@ def re_scheduling(is_draw=False,
     return(accept_rate,total_cost)
 
 if __name__ == '__main__':
-    is_draw = False
+    is_draw = True
     is_annotation = True
     is_draw_task_graph = False
-    application_num = 1000
+    application_num = 30
     application_average_interval = 120
     edge_number = 20
     random_seed = 1.2
     is_multiple = True
-    deadline_alpha = 0.25
+    deadline_alpha = 0.2
 
-    for application_average_interval in range(100,300,30):
-        exp_num = 1
-        a_list = [0,0]
-        c_list = [0,0]
-        for _exp_num in range(exp_num):
-            random_seed = 1+0.1*_exp_num
-            _a, _c = re_scheduling(
-                is_draw=is_draw,
-                is_annotation=is_annotation,
-                application_num=application_num,
-                application_average_interval=application_average_interval,
-                edge_number=edge_number,
-                scheduler=utils.get_node_with_earliest_finish_time,
-                random_seed=random_seed,
-                is_draw_task_graph=is_draw_task_graph,
-                is_multiple=is_multiple,
-                deadline_alpha=deadline_alpha)
-            a_list[0]+=_a
-            c_list[0]+=_c
+    for deadline_alpha in range(10):
+        deadline_alpha = 0.2 + 0.01*deadline_alpha
+        for application_average_interval in range(100,300,20):
+            exp_num = 3
+            a_list = [0,0]
+            c_list = [0,0]
+            for _exp_num in range(exp_num):
+                random_seed = 1+0.1*_exp_num
+                _a, _c = re_scheduling(
+                    is_draw=is_draw,
+                    is_annotation=is_annotation,
+                    application_num=application_num,
+                    application_average_interval=application_average_interval,
+                    edge_number=edge_number,
+                    scheduler=utils.get_node_with_earliest_finish_time_without_cloud,
+                    random_seed=random_seed,
+                    is_draw_task_graph=is_draw_task_graph,
+                    is_multiple=is_multiple,
+                    deadline_alpha=deadline_alpha)
+                a_list[0]+=_a
+                c_list[0]+=_c
+                exit(0)
+                _a, _c = re_scheduling(
+                    is_draw=is_draw,
+                    is_annotation=is_annotation,
+                    application_num=application_num,
+                    application_average_interval=application_average_interval,
+                    edge_number=edge_number,
+                    scheduler=utils.
+                    get_node_with_least_cost_constrained_by_subdeadline_without_cloud,
+                    random_seed=random_seed,
+                    is_draw_task_graph=is_draw_task_graph,
+                    is_multiple=is_multiple,
+                    deadline_alpha=deadline_alpha)
+                a_list[1]+=_a
+                c_list[1]+=_c
 
-            _a, _c = re_scheduling(
-                is_draw=is_draw,
-                is_annotation=is_annotation,
-                application_num=application_num,
-                application_average_interval=application_average_interval,
-                edge_number=edge_number,
-                scheduler=utils.
-                get_node_with_least_cost_constrained_by_subdeadline,
-                random_seed=random_seed,
-                is_draw_task_graph=is_draw_task_graph,
-                is_multiple=is_multiple,
-                deadline_alpha=deadline_alpha)
-            a_list[1]+=_a
-            c_list[1]+=_c
-
-        print(application_average_interval)
-        print([i/exp_num for i in a_list])
-        print([i/exp_num for i in c_list])
+            print("deadline_alpha",deadline_alpha)
+            print("application_average_interval",application_average_interval)
+            print(application_average_interval)
+            print([i/exp_num for i in a_list])
+            print([i/exp_num for i in c_list])
+            print()
+            break

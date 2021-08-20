@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-08-06 13:33:22
 LastEditors: loujiong
-LastEditTime: 2021-08-10 11:42:42
+LastEditTime: 2021-08-11 21:08:49
 Description: 
 Email:  413012592@qq.com
 '''
@@ -100,7 +100,7 @@ def re_scheduling(is_draw=False,
         release_time += random.expovariate(1 / application_average_interval)
     application_list = [
         utils.Application(release_time=release_time_list[i],
-                          task_num=rd(10, 20),
+                          task_num=rd(7, 40),
                           release_node=rd(0, edge_number - 1),application_index = i)
         for i in range(application_num)
     ]
@@ -127,7 +127,7 @@ def re_scheduling(is_draw=False,
     edge_list = [
         utils.Edge(task_concurrent_capacity=1,
                    process_data_rate=process_data_rate_list[i],
-                   upload_data_rate=4.5,cost_per_mip = cost_per_mip_list[i]) for i in range(edge_number)
+                   upload_data_rate= 3+ 3*random.random(),cost_per_mip = cost_per_mip_list[i]) for i in range(edge_number)
     ]
 
     _cost_per_mip_list = []
@@ -190,7 +190,7 @@ def re_scheduling(is_draw=False,
         
         for _t in _application.task_graph.nodes():
             _application.task_graph.nodes()[_t]["sub_deadline"] = sub_deadline_list[_t]
-            _application.task_graph.nodes()[_t]["start_sub_deadline"] = resized_start_sub_deadline_list[_t] 
+            _application.task_graph.nodes()[_t]["start_sub_deadline"] = start_sub_deadline_list[_t] 
 
         interested_time[1] += time.time() - interested_time_st
         
@@ -209,6 +209,8 @@ def re_scheduling(is_draw=False,
         #just for record
         total_len_unscheduled_tasks_list.append(len(unscheduled_tasks))
 
+        print()
+        print('application index {0} release time {1} deadline {2}'.format(_release_index,application_list[_release_index].release_time,application_list[_release_index].release_time+application_list[_release_index].deadline))
         # start scheduling
         while(len(unscheduled_tasks_sorted_by_remain_length) > 0):
             st = time.time()
@@ -229,8 +231,9 @@ def re_scheduling(is_draw=False,
                 # selecting node based on the scheduler
                 is_in_deadline,selected_node = scheduler(
                     selected_task_index, _current_application, edge_list, cloud, _release_time)
+                print(selected_task_index,is_in_deadline,selected_node)
             interested_time[2] += time.time() - interested_time_st
-
+            
             if selected_node == edge_number:
                 # schedule to the cloud
                 precedence_task_finish_time = []
@@ -308,6 +311,8 @@ def re_scheduling(is_draw=False,
                                             actual_start_time, _cpu)
                 _current_application.task_graph.nodes[selected_task_index]["finish_time"] = actual_start_time + estimated_runtime
 
+
+            print('start_time:{0} finish_time:{1}'.format(_current_application.task_graph.nodes[selected_task_index]["start_time"],_current_application.task_graph.nodes[selected_task_index]["finish_time"]))
 
             application_list[_ap_index].task_graph.nodes()[selected_task_index]["is_scheduled_in_this_scheduling"] = 1
 
@@ -396,34 +401,40 @@ def re_scheduling(is_draw=False,
 if __name__ == '__main__':
     is_draw = False
     is_annotation = True
-    is_draw_task_graph = False
-    application_num = 1000
+    is_draw_task_graph = True
+    application_num = 30
     application_average_interval = 120
     edge_number = 20
     random_seed = 1.2
     is_multiple = True
-    deadline_alpha = 0.5
+    deadline_alpha = 0.2
 
-    for application_average_interval in range(100,300,30):
-        exp_num = 1
-        a_list = [0]
-        c_list = [0]
-        for _exp_num in range(exp_num):
-            random_seed = 1+0.1*_exp_num
-            _a, _c = re_scheduling(
-                is_draw=is_draw,
-                is_annotation=is_annotation,
-                application_num=application_num,
-                application_average_interval=application_average_interval,
-                edge_number=edge_number,
-                scheduler=utils.
-                get_node_with_least_cost_constrained_by_start_subdeadline_without_cloud,
-                random_seed=random_seed,
-                is_draw_task_graph=is_draw_task_graph,
-                is_multiple=is_multiple,
-                deadline_alpha=deadline_alpha)
-            a_list[0]+=_a
-            c_list[0]+=_c
-        print(application_average_interval)
-        print([i/exp_num for i in a_list])
-        print([i/exp_num for i in c_list])
+    for deadline_alpha in range(10):
+        deadline_alpha = 0.2 + 0.01*deadline_alpha
+        for application_average_interval in range(100,300,20):
+            exp_num = 3
+            a_list = [0]
+            c_list = [0]
+            for _exp_num in range(exp_num):
+                random_seed = 1+0.1*_exp_num
+                _a, _c = re_scheduling(
+                    is_draw=is_draw,
+                    is_annotation=is_annotation,
+                    application_num=application_num,
+                    application_average_interval=application_average_interval,
+                    edge_number=edge_number,
+                    scheduler=utils.
+                    get_node_with_least_cost_constrained_by_start_subdeadline_without_cloud,
+                    random_seed=random_seed,
+                    is_draw_task_graph=is_draw_task_graph,
+                    is_multiple=is_multiple,
+                    deadline_alpha=deadline_alpha)
+                a_list[0]+=_a
+                c_list[0]+=_c
+                exit(0)
+            print("deadline_alpha",deadline_alpha)
+            print("application_average_interval",application_average_interval)
+            print([i/exp_num for i in a_list])
+            print([i/exp_num for i in c_list])
+            print()
+            break
