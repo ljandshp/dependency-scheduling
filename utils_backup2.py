@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-04-16 13:18:37
 LastEditors: loujiong
-LastEditTime: 2021-08-19 16:19:08
+LastEditTime: 2021-08-21 20:25:57
 Description: utils file
 Email:  413012592@qq.com
 '''
@@ -16,6 +16,7 @@ import math
 import numpy as np
 import pqdict
 import read_in_task_graph
+from collections import deque
 
 class Edge():
     def __init__(self, task_concurrent_capacity, process_data_rate,
@@ -339,6 +340,78 @@ def get_sub_deadline_list(G,remain_length_list,deadline = 10,edge_weight=1,node_
     for i in range(G.number_of_nodes()):
         sub_deadline_list[i] = deadline*(remain_length_list[0]-remain_length_list[i]+G.nodes[i]["w"]*node_weight)/remain_length_list[0]
     return sub_deadline_list
+
+def get_sub_deadline_list_pcp(G,remain_length_list,deadline = 10,edge_weight=1,node_weight=1):
+    node_deque = deque()
+    sub_deadline_list = [-1]*G.number_of_nodes()
+    sub_deadline_list[0] = 0
+    sub_deadline_list[-1] = deadline
+    eft_list = [0]*G.number_of_nodes()
+    for _n in range(G.number_of_nodes()):
+        _eft = 0+node_weight*G.nodes[_n]['w']
+        for u,_ in G.in_edges(_n):
+            _eft = min(_eft,eft_list[u]+node_weight*G.nodes[_n]['w']+edge_weight*G.edges[u,_n]['e'])
+        eft_list[_n] = _eft
+    node_deque.append(G.number_of_nodes()-1)
+    while(len(node_deque)>0):
+        _n = node_deque.pop()
+        # print(_n)
+        #find critical path
+        critical_path = deque()
+        critical_path.append(_n)
+        _current_n = _n
+        while(True):
+            has_unassigned_parent = False
+            critical_parent = -1
+            _lst = -1
+            for u,_ in G.in_edges(_current_n):
+                if sub_deadline_list[u] < 0:
+                    has_unassigned_parent = True
+                    if eft_list[u]+edge_weight*G.edges[u,_current_n]['e'] > _lst:
+                        _lst = eft_list[u]+edge_weight*G.edges[u,_current_n]['e']
+                        critical_parent = u
+            if has_unassigned_parent:
+                critical_path.append(critical_parent)
+                _current_n = critical_parent
+            if not has_unassigned_parent:
+                break
+        
+        if len(critical_path) < 2:
+            continue
+        
+        #find the first node
+        _current_n = critical_path[-1]
+        first_node = -1
+        _lst = -1
+        for u,_ in G.in_edges(_current_n):
+            if sub_deadline_list[u] + edge_weight*G.edges[u,_current_n]['e'] > _lst:
+                _lst = sub_deadline_list[u] + edge_weight*G.edges[u,_current_n]['e']
+                first_node = u
+        critical_path.append(first_node)
+
+        # print('critical_path',critical_path)
+        #assign sub deadline
+        total_time = 0
+        total_time_list = []
+        sub_deadline_list_s = sub_deadline_list[critical_path[-1]]
+        sub_deadline_list_f = sub_deadline_list[critical_path[0]]
+        for i in range(0,len(critical_path)-1):
+            _n = critical_path[i]
+            total_time += node_weight*G.nodes[_n]['w']
+            total_time += edge_weight*G.edges[critical_path[i+1],_n]['e']
+            total_time_list.append(total_time)
+        for i in range(len(critical_path)-2):
+            _n = critical_path[i+1]
+            sub_deadline_list[_n] = sub_deadline_list_f-(sub_deadline_list_f-sub_deadline_list_s)*total_time_list[i]/total_time
+        
+        #add to node_deque
+        for i in range(len(critical_path)-2,-1,-1):
+            node_deque.append(critical_path[i])
+        # print('node_deque',node_deque)
+    # print(sub_deadline_list)
+    # print(deadline)
+    # quit()
+    return(sub_deadline_list)
 
 def get_sub_deadline_list_BDAS(G,remain_length_list,edge_list,deadline = 10,edge_weight=1,node_weight=1):
     process_data_rate_list = [edge.process_data_rate for edge in edge_list]

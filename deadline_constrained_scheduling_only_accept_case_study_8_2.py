@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-08-02 15:36:31
 LastEditors: loujiong
-LastEditTime: 2021-08-19 17:25:39
+LastEditTime: 2021-08-21 18:47:06
 Description: 
 Email:  413012592@qq.com
 '''
@@ -137,7 +137,8 @@ def re_scheduling(is_draw=False,
                 _application.dynamic_longest_remain_length = remain_length_list[_t]
 
         # generate sub_deadline for each task
-        sub_deadline_list = utils.get_sub_deadline_list(_application.task_graph,remain_length_list,deadline = _application.deadline,edge_weight=edge_weight,node_weight=node_weight)
+        # sub_deadline_list = utils.get_sub_deadline_list(_application.task_graph,remain_length_list,deadline = _application.deadline,edge_weight=edge_weight,node_weight=node_weight)
+        sub_deadline_list = utils.get_sub_deadline_list_pcp(_application.task_graph,remain_length_list,deadline = _application.deadline,edge_weight=edge_weight,node_weight=node_weight)
         # print(sub_deadline_list)
         # sub_deadline_list = utils.get_sub_deadline_list_BDAS(_application.task_graph,remain_length_list,edge_list,deadline = _application.deadline,edge_weight=edge_weight,node_weight=node_weight)
         # print(sub_deadline_list)
@@ -353,7 +354,7 @@ if __name__ == '__main__':
     is_multiple = False
     deadline_alpha = 0.2
 
-    for application_average_interval in range(150,550,100):
+    for application_average_interval in range(150,550,400):
         for deadline_alpha in range(10):
             deadline_alpha = 0 + 0.05*deadline_alpha
             exp_num = 1

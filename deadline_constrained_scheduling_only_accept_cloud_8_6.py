@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-08-06 13:33:22
 LastEditors: loujiong
-LastEditTime: 2021-08-19 19:50:45
+LastEditTime: 2021-08-21 20:50:12
 Description: 
 Email:  413012592@qq.com
 '''
@@ -190,9 +190,11 @@ def re_scheduling(is_draw=False,
         # generate sub_deadline for each task
         sub_deadline_list = utils.get_sub_deadline_list(_application.task_graph,remain_length_list,deadline = _application.deadline,edge_weight=edge_weight,node_weight=node_weight)
         start_sub_deadline_list = utils.get_start_sub_deadline_list(_application.task_graph,remain_length_list,deadline = _application.deadline)
+        
         # print(sub_deadline_list)
 
         resized_start_sub_deadline_list = resize_deadline(start_sub_deadline_list,sub_deadline_list,_application,edge_list)
+        start_sub_deadline_list2 = utils.get_start_sub_deadline_list_pcp(_application.task_graph,remain_length_list,deadline = _application.deadline,edge_weight=edge_weight,node_weight=node_weight)
         
         # print(_release_index)
         # print("resized_start_sub_deadline_list:",[(i,j) for i,j in enumerate(resized_start_sub_deadline_list)])
@@ -201,7 +203,7 @@ def re_scheduling(is_draw=False,
 
         for _t in _application.task_graph.nodes():
             _application.task_graph.nodes()[_t]["sub_deadline"] = sub_deadline_list[_t]
-            _application.task_graph.nodes()[_t]["start_sub_deadline"] = min(start_sub_deadline_list[_t],resized_start_sub_deadline_list[_t])   #min(start_sub_deadline_list[_t],resized_start_sub_deadline_list[_t]) #start_sub_deadline_list[_t] #0   #resized_start_sub_deadline_list[_t] 
+            _application.task_graph.nodes()[_t]["start_sub_deadline"] = min(start_sub_deadline_list2[_t],start_sub_deadline_list[_t],resized_start_sub_deadline_list[_t]) #min(start_sub_deadline_list[_t],resized_start_sub_deadline_list[_t])   #min(start_sub_deadline_list[_t],resized_start_sub_deadline_list[_t]) #start_sub_deadline_list[_t] #0   #resized_start_sub_deadline_list[_t] 
 
         interested_time[1] += time.time() - interested_time_st
         
@@ -374,8 +376,7 @@ def re_scheduling(is_draw=False,
             if is_multiple and new_finish_task_set[_edge_index].shape[0]>0:
                 _edge_node.update_plan_to_actural(_release_time,new_finish_task_set[_edge_index],application_list)
         
-        print("application:{0},is_accept:{1}".format(_release_index,application_list[_release_index].is_accept))
-        print()
+        # print("application:{0},is_accept:{1}".format(_release_index,application_list[_release_index].is_accept))
 
     utils.check(is_multiple, application_list, edge_list, cloud)
     
@@ -446,7 +447,7 @@ if __name__ == '__main__':
     is_multiple = False
     deadline_alpha = 0.2
 
-    for application_average_interval in range(150,550,100):
+    for application_average_interval in range(150,550,400):
         for deadline_alpha in range(10):
             deadline_alpha = 0 + 0.05*deadline_alpha
             exp_num = 1
@@ -494,7 +495,7 @@ if __name__ == '__main__':
             print([i/exp_num for i in a_list])
             print([i/exp_num for i in c_list])
             print([c_list[i]/(a_list[i]+0.00000000001) for i in range(len(a_list))])
-            quit()
+            # quit()
             print()
             if resultfile != '':
                 with open(resultfile,mode="a") as f:
