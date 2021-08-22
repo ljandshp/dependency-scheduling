@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-04-16 13:18:37
 LastEditors: loujiong
-LastEditTime: 2021-08-21 20:32:50
+LastEditTime: 2021-08-22 12:08:08
 Description: utils file
 Email:  413012592@qq.com
 '''
@@ -443,6 +443,11 @@ def get_start_sub_deadline_list_pcp(G,remain_length_list,deadline = 10,edge_weig
         #add to node_deque
         for i in range(len(critical_path)-2,-1,-1):
             node_deque.append(critical_path[i])
+
+        # node_deque.append(critical_path[0])
+        # for i in range(1,len(critical_path)-1):
+        #     node_deque.appendleft(critical_path[i])
+
         # print('node_deque',node_deque)
     # print(sub_deadline_list)
     # print(deadline)
