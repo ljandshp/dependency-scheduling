@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-08-02 15:36:31
 LastEditors: loujiong
-LastEditTime: 2021-09-09 11:41:05
+LastEditTime: 2021-09-09 13:41:17
 Description: 
 Email:  413012592@qq.com
 '''
@@ -77,7 +77,7 @@ def re_scheduling(is_draw=False,
 
 
     # initiate edges and cloud
-    cloud = utils.Cloud(cost_per_mip = 50, data_rate = 26.25)
+    cloud = utils.Cloud(cost_per_mip = 50, data_rate = ccr*26.25*5)
     edge_list = [
         utils.Edge(task_concurrent_capacity=1,
                    process_data_rate=performance_cost_list[i][0],
@@ -411,7 +411,7 @@ if __name__ == '__main__':
                         application_average_interval=application_average_interval,
                         edge_number=edge_number,
                         scheduler=utils.
-                        get_node_with_least_cost_constrained_by_subdeadline,
+                        get_node_with_earliest_finish_time,
                         random_seed=random_seed,
                         is_draw_task_graph=is_draw_task_graph,
                         is_multiple=is_multiple,
