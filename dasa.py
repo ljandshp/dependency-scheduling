@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-09-07 16:14:30
 LastEditors: loujiong
-LastEditTime: 2021-09-09 15:29:26
+LastEditTime: 2021-09-09 16:44:10
 Description: 
 Email:  413012592@qq.com
 '''
@@ -142,7 +142,7 @@ def re_scheduling(is_draw=False,
 
 
     # initiate edges and cloud
-    cloud = utils.Cloud(cost_per_mip = 50, data_rate = ccr*26.25*8)
+    cloud = utils.Cloud(cost_per_mip = 50, data_rate = ccr*26.25*2)
     edge_list = [
         utils.Edge(task_concurrent_capacity=1,
                    process_data_rate=performance_cost_list[i][0],
