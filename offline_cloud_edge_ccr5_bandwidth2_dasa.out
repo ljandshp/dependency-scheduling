@@ -1,0 +1,60 @@
+ccr:0.5
+deadline_alpha:0.0
+application_average_interval:150
+success_number:[0.0, 0.924]
+total_cost:[0.0, 3681359.259566683]
+normalized_cost:[0.0, 20.663452085990585]
+ccr:0.5
+deadline_alpha:0.05
+application_average_interval:150
+success_number:[0.0, 0.94]
+total_cost:[0.0, 3369922.5359119624]
+normalized_cost:[0.0, 18.592733548965565]
+ccr:0.5
+deadline_alpha:0.1
+application_average_interval:150
+success_number:[0.02, 0.948]
+total_cost:[195586.12659895176, 3130584.702283904]
+normalized_cost:[46.21978442756434, 17.11720938243859]
+ccr:0.5
+deadline_alpha:0.15000000000000002
+application_average_interval:150
+success_number:[0.406, 0.952]
+total_cost:[3294152.4628670663, 2917677.2262927294]
+normalized_cost:[39.113033429101954, 15.884988020192814]
+ccr:0.5
+deadline_alpha:0.2
+application_average_interval:150
+success_number:[0.7, 0.962]
+total_cost:[5281188.6504312735, 2730010.5974411718]
+normalized_cost:[37.33783332323525, 14.711183617149363]
+ccr:0.5
+deadline_alpha:0.25
+application_average_interval:150
+success_number:[0.934, 0.96]
+total_cost:[6578149.822712672, 2511038.3944964423]
+normalized_cost:[36.19320267047816, 13.563077231875539]
+ccr:0.5
+deadline_alpha:0.30000000000000004
+application_average_interval:150
+success_number:[0.994, 0.974]
+total_cost:[6882114.388613306, 2341795.052157084]
+normalized_cost:[35.842993410847896, 12.464149703007973]
+ccr:0.5
+deadline_alpha:0.35000000000000003
+application_average_interval:150
+success_number:[1.0, 0.982]
+total_cost:[6903339.261504142, 2158391.796965305]
+normalized_cost:[35.77924237753047, 11.392654928601985]
+ccr:0.5
+deadline_alpha:0.4
+application_average_interval:150
+success_number:[1.0, 0.984]
+total_cost:[6903339.261504142, 2029412.3275470498]
+normalized_cost:[35.77924237753047, 10.687781931680966]
+ccr:0.5
+deadline_alpha:0.45
+application_average_interval:150
+success_number:[1.0, 0.988]
+total_cost:[6903339.261504142, 1920100.0590117266]
+normalized_cost:[35.77924237753047, 10.075393974305188]
