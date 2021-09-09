@@ -1,0 +1,50 @@
+deadline_alpha:0.0
+application_average_interval:150
+success_number:[0.0, 0.10666666666666665]
+total_cost:[0.0, 246112.73893527166]
+normalized_cost:[0.0, 13.021385313710196]
+deadline_alpha:0.05
+application_average_interval:150
+success_number:[0.0, 0.14866666666666664]
+total_cost:[0.0, 317297.8288830096]
+normalized_cost:[0.0, 12.079131979182977]
+deadline_alpha:0.1
+application_average_interval:150
+success_number:[0.09266666666666667, 0.154]
+total_cost:[230379.2201909454, 303436.9081515894]
+normalized_cost:[11.930488927955107, 11.142174583613702]
+deadline_alpha:0.15000000000000002
+application_average_interval:150
+success_number:[0.56, 0.18199999999999997]
+total_cost:[1430934.4960925176, 330681.7005937809]
+normalized_cost:[12.337244730969006, 10.237408756329739]
+deadline_alpha:0.2
+application_average_interval:150
+success_number:[0.6973333333333334, 0.20933333333333334]
+total_cost:[1783253.7347149327, 357017.62744438153]
+normalized_cost:[12.651563693993106, 9.487767957012355]
+deadline_alpha:0.25
+application_average_interval:150
+success_number:[0.9773333333333333, 0.23666666666666666]
+total_cost:[2460779.111358723, 375948.28457139636]
+normalized_cost:[13.00612961325851, 8.834412801787364]
+deadline_alpha:0.30000000000000004
+application_average_interval:150
+success_number:[1.0, 0.24666666666666667]
+total_cost:[2513974.81021192, 367105.15561301704]
+normalized_cost:[13.02172689493221, 8.240975314943428]
+deadline_alpha:0.35000000000000003
+application_average_interval:150
+success_number:[1.0, 0.26866666666666666]
+total_cost:[2513974.81021192, 384722.06421693723]
+normalized_cost:[13.02172689493221, 7.84642037646041]
+deadline_alpha:0.4
+application_average_interval:150
+success_number:[1.0, 0.29733333333333334]
+total_cost:[2513974.81021192, 406814.88895793]
+normalized_cost:[13.02172689493221, 7.482463569736798]
+deadline_alpha:0.45
+application_average_interval:150
+success_number:[1.0, 0.33066666666666666]
+total_cost:[2513974.81021192, 438103.12376704736]
+normalized_cost:[13.02172689493221, 7.232615146335071]

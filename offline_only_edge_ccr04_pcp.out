@@ -1,0 +1,50 @@
+deadline_alpha:0.0
+application_average_interval:150
+success_number:[0.0, 0.3193333333333333]
+total_cost:[0.0, 753084.3452378131]
+normalized_cost:[0.0, 12.580610725153868]
+deadline_alpha:0.05
+application_average_interval:150
+success_number:[0.0, 0.36999999999999994]
+total_cost:[0.0, 821099.085234155]
+normalized_cost:[0.0, 11.84061560278602]
+deadline_alpha:0.1
+application_average_interval:150
+success_number:[0.0, 0.48533333333333334]
+total_cost:[0.0, 1025665.1094912648]
+normalized_cost:[0.0, 11.253715849937848]
+deadline_alpha:0.15000000000000002
+application_average_interval:150
+success_number:[0.38800000000000007, 0.556]
+total_cost:[962737.3683434228, 1110905.1145059613]
+normalized_cost:[12.032645730069005, 10.656116081668719]
+deadline_alpha:0.2
+application_average_interval:150
+success_number:[0.6026666666666666, 0.5906666666666668]
+total_cost:[1564928.5971095802, 1112960.223676164]
+normalized_cost:[12.5580224498512, 9.963644550264908]
+deadline_alpha:0.25
+application_average_interval:150
+success_number:[0.7866666666666667, 0.6306666666666666]
+total_cost:[2005601.1446084038, 1130394.2835022968]
+normalized_cost:[12.84799152351295, 9.43959406483214]
+deadline_alpha:0.30000000000000004
+application_average_interval:150
+success_number:[0.9860000000000001, 0.6746666666666666]
+total_cost:[2488404.181589253, 1145262.8973069207]
+normalized_cost:[13.046275746905657, 8.870257319020071]
+deadline_alpha:0.35000000000000003
+application_average_interval:150
+success_number:[1.0, 0.7380000000000001]
+total_cost:[2518865.7293098383, 1192320.165028117]
+normalized_cost:[13.047060566733371, 8.41345755752222]
+deadline_alpha:0.4
+application_average_interval:150
+success_number:[1.0, 0.782]
+total_cost:[2518865.7293098383, 1203664.6829518354]
+normalized_cost:[13.047060566733371, 8.007200846146578]
+deadline_alpha:0.45
+application_average_interval:150
+success_number:[1.0, 0.8286666666666668]
+total_cost:[2518865.7293098383, 1225823.7603240162]
+normalized_cost:[13.047060566733371, 7.684407898321844]

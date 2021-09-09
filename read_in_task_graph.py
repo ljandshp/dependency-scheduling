@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-08-15 22:37:43
 LastEditors: loujiong
-LastEditTime: 2021-08-17 22:39:21
+LastEditTime: 2021-09-08 15:50:45
 Description: read in the workflow task graph
 Email:  413012592@qq.com
 '''
@@ -53,7 +53,8 @@ def get_cybershake_30():
 
 def get_workflow():
     rd = random.randint(0,4)
-    workflow_list = ['CyberShake_50.xml','Epigenomics_46.xml','Inspiral_50.xml','Montage_50.xml','Sipht_60.xml']
+    # workflow_list = ['CyberShake_50.xml','Epigenomics_46.xml','Inspiral_50.xml','Montage_50.xml','Sipht_60.xml']
+    workflow_list = ['CyberShake_30.xml','Epigenomics_24.xml','Inspiral_30.xml','Montage_25.xml','Sipht_30.xml']
     dom = xml.dom.minidom.parse(workflow_list[rd])
     root = dom.documentElement
     G = networkx.DiGraph()

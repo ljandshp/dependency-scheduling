@@ -1,0 +1,50 @@
+deadline_alpha:0.0
+application_average_interval:150
+success_number:[0.0, 0.4286666666666667]
+total_cost:[0.0, 1039631.9897276737]
+normalized_cost:[0.0, 12.756498337017089]
+deadline_alpha:0.05
+application_average_interval:150
+success_number:[0.0, 0.4386666666666667]
+total_cost:[0.0, 1020735.9047619532]
+normalized_cost:[0.0, 12.286264476511285]
+deadline_alpha:0.1
+application_average_interval:150
+success_number:[0.09266666666666667, 0.566]
+total_cost:[230379.2201909454, 1255786.3209484362]
+normalized_cost:[11.930488927955107, 11.742755036200434]
+deadline_alpha:0.15000000000000002
+application_average_interval:150
+success_number:[0.56, 0.6833333333333332]
+total_cost:[1430934.4960925176, 1434221.7272945351]
+normalized_cost:[12.337244730969006, 11.090925354709716]
+deadline_alpha:0.2
+application_average_interval:150
+success_number:[0.6973333333333334, 0.7553333333333333]
+total_cost:[1783253.7347149327, 1501008.895798697]
+normalized_cost:[12.651563693993106, 10.45617641692933]
+deadline_alpha:0.25
+application_average_interval:150
+success_number:[0.9773333333333333, 0.7959999999999999]
+total_cost:[2460779.111358723, 1502576.4936100617]
+normalized_cost:[13.00612961325851, 9.907377758975162]
+deadline_alpha:0.30000000000000004
+application_average_interval:150
+success_number:[1.0, 0.824]
+total_cost:[2513974.81021192, 1479291.609088566]
+normalized_cost:[13.02172689493221, 9.389936325477018]
+deadline_alpha:0.35000000000000003
+application_average_interval:150
+success_number:[1.0, 0.8646666666666666]
+total_cost:[2513974.81021192, 1475834.6434413474]
+normalized_cost:[13.02172689493221, 8.909077002626171]
+deadline_alpha:0.4
+application_average_interval:150
+success_number:[1.0, 0.8933333333333334]
+total_cost:[2513974.81021192, 1457439.6095114818]
+normalized_cost:[13.02172689493221, 8.493548369519212]
+deadline_alpha:0.45
+application_average_interval:150
+success_number:[1.0, 0.9199999999999999]
+total_cost:[2513974.81021192, 1438068.7685583064]
+normalized_cost:[13.02172689493221, 8.138873199937684]

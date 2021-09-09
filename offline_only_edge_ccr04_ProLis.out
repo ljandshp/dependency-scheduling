@@ -1,0 +1,50 @@
+deadline_alpha:0.0
+application_average_interval:150
+success_number:[0.0, 0.18866666666666665]
+total_cost:[0.0, 425186.60561946867]
+normalized_cost:[0.0, 12.610266158658453]
+deadline_alpha:0.05
+application_average_interval:150
+success_number:[0.0, 0.266]
+total_cost:[0.0, 569232.6779976552]
+normalized_cost:[0.0, 11.709792630175343]
+deadline_alpha:0.1
+application_average_interval:150
+success_number:[0.0, 0.33866666666666667]
+total_cost:[0.0, 678027.6515494336]
+normalized_cost:[0.0, 10.807640034497974]
+deadline_alpha:0.15000000000000002
+application_average_interval:150
+success_number:[0.38800000000000007, 0.4386666666666666]
+total_cost:[962737.3683434228, 823239.0415786487]
+normalized_cost:[12.032645730069005, 10.05310778842339]
+deadline_alpha:0.2
+application_average_interval:150
+success_number:[0.6026666666666666, 0.5226666666666667]
+total_cost:[1564928.5971095802, 909282.3434580928]
+normalized_cost:[12.5580224498512, 9.196566042079391]
+deadline_alpha:0.25
+application_average_interval:150
+success_number:[0.7866666666666667, 0.602]
+total_cost:[2005601.1446084038, 981970.3458451327]
+normalized_cost:[12.84799152351295, 8.549099334657754]
+deadline_alpha:0.30000000000000004
+application_average_interval:150
+success_number:[0.9860000000000001, 0.6586666666666666]
+total_cost:[2488404.181589253, 1015654.7202292341]
+normalized_cost:[13.046275746905657, 8.041190467401346]
+deadline_alpha:0.35000000000000003
+application_average_interval:150
+success_number:[1.0, 0.6980000000000001]
+total_cost:[2518865.7293098383, 1021050.2382654153]
+normalized_cost:[13.047060566733371, 7.574804654766427]
+deadline_alpha:0.4
+application_average_interval:150
+success_number:[1.0, 0.7726666666666667]
+total_cost:[2518865.7293098383, 1073383.5861935078]
+normalized_cost:[13.047060566733371, 7.204567594855138]
+deadline_alpha:0.45
+application_average_interval:150
+success_number:[1.0, 0.814]
+total_cost:[2518865.7293098383, 1081709.0367931481]
+normalized_cost:[13.047060566733371, 6.861918072232429]

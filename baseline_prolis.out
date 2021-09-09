@@ -1,0 +1,50 @@
+deadline_alpha:0.0
+application_average_interval:150
+success_number:[0.0, 0.16466666666666666]
+total_cost:[0.0, 381652.29479959374]
+normalized_cost:[0.0, 12.832465481778137]
+deadline_alpha:0.05
+application_average_interval:150
+success_number:[0.0, 0.35133333333333333]
+total_cost:[0.0, 765903.0788328106]
+normalized_cost:[0.0, 11.870586029587942]
+deadline_alpha:0.1
+application_average_interval:150
+success_number:[0.09266666666666667, 0.5333333333333333]
+total_cost:[230379.2201909454, 1101705.577233093]
+normalized_cost:[11.930488927955107, 10.975912499334969]
+deadline_alpha:0.15000000000000002
+application_average_interval:150
+success_number:[0.56, 0.6853333333333333]
+total_cost:[1430934.4960925176, 1341195.5557692093]
+normalized_cost:[12.337244730969006, 10.280162057325525]
+deadline_alpha:0.2
+application_average_interval:150
+success_number:[0.6973333333333334, 0.7640000000000001]
+total_cost:[1783253.7347149327, 1416030.098448864]
+normalized_cost:[12.651563693993106, 9.656207955715951]
+deadline_alpha:0.25
+application_average_interval:150
+success_number:[0.9773333333333333, 0.848]
+total_cost:[2460779.111358723, 1482404.8915353436]
+normalized_cost:[13.00612961325851, 9.07238506502051]
+deadline_alpha:0.30000000000000004
+application_average_interval:150
+success_number:[1.0, 0.8913333333333333]
+total_cost:[2513974.81021192, 1469810.89726315]
+normalized_cost:[13.02172689493221, 8.541187265984657]
+deadline_alpha:0.35000000000000003
+application_average_interval:150
+success_number:[1.0, 0.93]
+total_cost:[2513974.81021192, 1448358.272291324]
+normalized_cost:[13.02172689493221, 8.060557977739327]
+deadline_alpha:0.4
+application_average_interval:150
+success_number:[1.0, 0.9513333333333334]
+total_cost:[2513974.81021192, 1407016.726436605]
+normalized_cost:[13.02172689493221, 7.656379079084256]
+deadline_alpha:0.45
+application_average_interval:150
+success_number:[1.0, 0.976]
+total_cost:[2513974.81021192, 1378502.1462684253]
+normalized_cost:[13.02172689493221, 7.307495827192959]

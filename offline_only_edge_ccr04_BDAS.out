@@ -1,0 +1,50 @@
+deadline_alpha:0.0
+application_average_interval:150
+success_number:[0.0, 0.14533333333333334]
+total_cost:[0.0, 331283.0853088984]
+normalized_cost:[0.0, 13.098923469954281]
+deadline_alpha:0.05
+application_average_interval:150
+success_number:[0.0, 0.15466666666666665]
+total_cost:[0.0, 329701.0502197707]
+normalized_cost:[0.0, 12.181377338393721]
+deadline_alpha:0.1
+application_average_interval:150
+success_number:[0.0, 0.16066666666666665]
+total_cost:[0.0, 315944.88782540726]
+normalized_cost:[0.0, 11.155903097752498]
+deadline_alpha:0.15000000000000002
+application_average_interval:150
+success_number:[0.38800000000000007, 0.17866666666666667]
+total_cost:[962737.3683434228, 324831.601339645]
+normalized_cost:[12.032645730069005, 10.24741441900481]
+deadline_alpha:0.2
+application_average_interval:150
+success_number:[0.6026666666666666, 0.212]
+total_cost:[1564928.5971095802, 353505.9839340081]
+normalized_cost:[12.5580224498512, 9.350011382104082]
+deadline_alpha:0.25
+application_average_interval:150
+success_number:[0.7866666666666667, 0.23066666666666666]
+total_cost:[2005601.1446084038, 359757.2871833584]
+normalized_cost:[12.84799152351295, 8.811257276392071]
+deadline_alpha:0.30000000000000004
+application_average_interval:150
+success_number:[0.9860000000000001, 0.23666666666666666]
+total_cost:[2488404.181589253, 351057.37639522896]
+normalized_cost:[13.046275746905657, 8.36034983225144]
+deadline_alpha:0.35000000000000003
+application_average_interval:150
+success_number:[1.0, 0.2373333333333333]
+total_cost:[2518865.7293098383, 329927.9069149268]
+normalized_cost:[13.047060566733371, 7.79952060399858]
+deadline_alpha:0.4
+application_average_interval:150
+success_number:[1.0, 0.25533333333333336]
+total_cost:[2518865.7293098383, 341944.00889431784]
+normalized_cost:[13.047060566733371, 7.458125927888782]
+deadline_alpha:0.45
+application_average_interval:150
+success_number:[1.0, 0.27466666666666667]
+total_cost:[2518865.7293098383, 348911.4915054152]
+normalized_cost:[13.047060566733371, 7.122781480295446]
