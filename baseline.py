@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-08-02 15:36:31
 LastEditors: loujiong
-LastEditTime: 2021-09-09 10:01:12
+LastEditTime: 2021-09-09 11:41:05
 Description: 
 Email:  413012592@qq.com
 '''
@@ -188,6 +188,7 @@ def re_scheduling(is_draw=False,
             else:
                 # selecting node based on the scheduler
                 is_in_deadline,selected_node = scheduler(selected_task_index, _current_application, edge_list, cloud, _release_time)
+                
             interested_time[2] += time.time() - interested_time_st
 
             if selected_node == edge_number:
@@ -386,7 +387,7 @@ if __name__ == '__main__':
                         application_num=application_num,
                         application_average_interval=application_average_interval,
                         edge_number=edge_number,
-                        scheduler=utils.get_node_with_earliest_finish_time_without_cloud,
+                        scheduler=utils.get_node_with_earliest_finish_time,
                         random_seed=random_seed,
                         is_draw_task_graph=is_draw_task_graph,
                         is_multiple=False,
@@ -410,7 +411,7 @@ if __name__ == '__main__':
                         application_average_interval=application_average_interval,
                         edge_number=edge_number,
                         scheduler=utils.
-                        get_node_with_earliest_finish_time_without_cloud,
+                        get_node_with_least_cost_constrained_by_subdeadline,
                         random_seed=random_seed,
                         is_draw_task_graph=is_draw_task_graph,
                         is_multiple=is_multiple,

@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-09-07 16:14:30
 LastEditors: loujiong
-LastEditTime: 2021-09-09 09:57:22
+LastEditTime: 2021-09-09 11:43:02
 Description: 
 Email:  413012592@qq.com
 '''
@@ -10,6 +10,7 @@ import networkx as nx
 from random import randint as rd
 import matplotlib.pyplot as plt
 import utils_backup as utils
+import utils_backup2 as utils2
 import draw
 import random
 import time
@@ -370,14 +371,14 @@ def re_scheduling(is_draw=False,
             _find_time = time.time()-st
             each_application_time += _find_time
             
-        # if not application_list[_release_index].is_accept:
+        if not application_list[_release_index].is_accept:
             #进行有关cloud的调度
-            # re = utils.schedule_with_cloud(application_list[_release_index],edge_list,cloud)
+            re = utils.schedule_with_cloud(application_list[_release_index],edge_list,cloud)
 
 
         # utils.adjust_task_start_finish_time(application_list[_release_index],edge_list,cloud)
 
-        # utils.adjust(application_list[_release_index],edge_list,cloud)
+        utils.adjust(application_list[_release_index],edge_list,cloud)
 
         new_finish_task_set = [np.empty((0,4)) for i in range(edge_number)]
         while (len(unscheduled_tasks) > 0):
@@ -484,7 +485,7 @@ if __name__ == '__main__':
                         application_num=application_num,
                         application_average_interval=application_average_interval,
                         edge_number=edge_number,
-                        scheduler=utils.get_node_with_earliest_finish_time_without_cloud,
+                        scheduler=utils2.get_node_with_earliest_finish_time,
                         random_seed=random_seed,
                         is_draw_task_graph=is_draw_task_graph,
                         is_multiple=False,

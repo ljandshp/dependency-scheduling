@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-04-16 13:18:37
 LastEditors: loujiong
-LastEditTime: 2021-08-22 12:08:08
+LastEditTime: 2021-09-09 11:40:50
 Description: utils file
 Email:  413012592@qq.com
 '''
@@ -576,7 +576,7 @@ def get_node_with_earliest_finish_time(selected_task_index, _application,
     finish_time_list.append(cloud_estimated_finish_time)
     selected_node = np.argmin(np.array(finish_time_list))
 
-    return selected_node
+    return False,selected_node
 
 def get_node_with_earliest_finish_time_without_cloud(selected_task_index, _application,
                                    edge_list, cloud, _release_time):
