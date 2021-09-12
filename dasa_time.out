@@ -1,0 +1,6 @@
+ccr:0.5
+deadline_alpha:0.0
+application_average_interval:150
+success_number:[0.0, 0.86]
+total_cost:[0.0, 18671550.08888894]
+normalized_cost:[0.0, 31.01339095852173]

@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-09-07 16:14:30
 LastEditors: loujiong
-LastEditTime: 2021-09-09 16:44:10
+LastEditTime: 2021-09-12 22:16:27
 Description: 
 Email:  413012592@qq.com
 '''
@@ -142,7 +142,7 @@ def re_scheduling(is_draw=False,
 
 
     # initiate edges and cloud
-    cloud = utils.Cloud(cost_per_mip = 50, data_rate = ccr*26.25*2)
+    cloud = utils.Cloud(cost_per_mip = 50, data_rate = ccr*26.25*5)
     edge_list = [
         utils.Edge(task_concurrent_capacity=1,
                    process_data_rate=performance_cost_list[i][0],
@@ -370,7 +370,8 @@ def re_scheduling(is_draw=False,
 
             _find_time = time.time()-st
             each_application_time += _find_time
-            
+        
+        interested_time_st = time.time()
         if not application_list[_release_index].is_accept:
             #进行有关cloud的调度
             re = utils.schedule_with_cloud(application_list[_release_index],edge_list,cloud)
@@ -379,6 +380,7 @@ def re_scheduling(is_draw=False,
         # utils.adjust_task_start_finish_time(application_list[_release_index],edge_list,cloud)
 
         utils.adjust(application_list[_release_index],edge_list,cloud)
+        interested_time[2] += time.time() - interested_time_st
 
         new_finish_task_set = [np.empty((0,4)) for i in range(edge_number)]
         while (len(unscheduled_tasks) > 0):
@@ -396,7 +398,7 @@ def re_scheduling(is_draw=False,
         
         # print("application:{0},is_accept:{1}".format(_release_index,application_list[_release_index].is_accept))
 
-    utils.check(is_multiple, application_list, edge_list, cloud)
+    # utils.check(is_multiple, application_list, edge_list, cloud)
     
     # output interval_statistical for each edge node
     for _edge_index,_edge_node in enumerate(edge_list):
@@ -433,8 +435,8 @@ def re_scheduling(is_draw=False,
         _cost_per_mip_list.append((_edge_index,_edge_node.cost_per_mip))
         _performance_list.append((_edge_index,_edge_node.process_data_rate))
 
-    # print(time.time()-all_st)
-    # print(interested_time)
+    # print("total_time:",time.time()-all_st)
+    print(interested_time)
     print("total_application_weight:{0}".format(total_application_weight))
     print("edge_weight:{0}, node_weight:{1}".format(edge_weight,node_weight))
     print("average_deadline_utilization:{0}".format(average_deadline_utilization/(accept_rate*len(application_list))))
@@ -465,71 +467,70 @@ if __name__ == '__main__':
     application_average_interval = 120
     edge_number = 20
     random_seed = 1.2
-    is_multiple = False
+    is_multiple = True
     deadline_alpha = 0.2
-    ccr = 0.1
-    for ccr in [0.5]:
-        for application_average_interval in range(150,550,400):
-            for deadline_alpha in range(10):
-                deadline_alpha = 0 + 0.05*deadline_alpha
-                exp_num = 1
-                a_list = [0,0]
-                c_list = [0,0]
-                a_w_list = [0,0]
-                for _exp_num in range(exp_num):
-                    random_seed = 1+0.1*_exp_num
-                    _a, _c, application_list, a_w = baseline.re_scheduling(
+    ccr = 0.5
+    for application_average_interval in [50,150,250]:
+        for deadline_alpha in range(10):
+            deadline_alpha = 0 + 0.05*deadline_alpha
+            exp_num = 1
+            a_list = [0,0]
+            c_list = [0,0]
+            a_w_list = [0,0]
+            for _exp_num in range(exp_num):
+                random_seed = 1+0.1*_exp_num
+                _a, _c, application_list, a_w = baseline.re_scheduling(
+                    is_draw=is_draw,
+                    is_annotation=is_annotation,
+                    application_num=application_num,
+                    application_average_interval=application_average_interval,
+                    edge_number=edge_number,
+                    scheduler=utils2.get_node_with_earliest_finish_time,
+                    random_seed=random_seed,
+                    is_draw_task_graph=is_draw_task_graph,
+                    is_multiple=False,
+                    deadline_alpha=deadline_alpha,
+                    base_deadline = [],
+                    ccr = ccr)
+                a_list[0]+=_a
+                c_list[0]+=_c
+                a_w_list[0] += a_w
+
+                base_deadline = []
+                for a in application_list:
+                    _sink = a.task_graph.number_of_nodes()-1
+                    base_deadline.append(a.task_graph.nodes[_sink]["finish_time"]-a.release_time)
+                    
+                _a, _c, _, a_w = re_scheduling(
                         is_draw=is_draw,
                         is_annotation=is_annotation,
                         application_num=application_num,
                         application_average_interval=application_average_interval,
                         edge_number=edge_number,
-                        scheduler=utils2.get_node_with_earliest_finish_time,
+                        scheduler=utils.
+                        get_node_with_least_cost_constrained_by_start_subdeadline_without_cloud,
                         random_seed=random_seed,
                         is_draw_task_graph=is_draw_task_graph,
-                        is_multiple=False,
+                        is_multiple=is_multiple,
                         deadline_alpha=deadline_alpha,
-                        base_deadline = [],
+                        base_deadline = base_deadline,
                         ccr = ccr)
-                    a_list[0]+=_a
-                    c_list[0]+=_c
-                    a_w_list[0] += a_w
-
-                    base_deadline = []
-                    for a in application_list:
-                        _sink = a.task_graph.number_of_nodes()-1
-                        base_deadline.append(a.task_graph.nodes[_sink]["finish_time"]-a.release_time)
-                        
-                    _a, _c, _, a_w = re_scheduling(
-                            is_draw=is_draw,
-                            is_annotation=is_annotation,
-                            application_num=application_num,
-                            application_average_interval=application_average_interval,
-                            edge_number=edge_number,
-                            scheduler=utils.
-                            get_node_with_least_cost_constrained_by_start_subdeadline_without_cloud,
-                            random_seed=random_seed,
-                            is_draw_task_graph=is_draw_task_graph,
-                            is_multiple=is_multiple,
-                            deadline_alpha=deadline_alpha,
-                            base_deadline = base_deadline,
-                            ccr = ccr)
-                    a_list[1]+=_a
-                    c_list[1]+=_c
-                    a_w_list[1] += a_w
-                print("deadline_alpha",deadline_alpha)
-                print("application_average_interval",application_average_interval)
-                print([i/exp_num for i in a_list])
-                print([i/exp_num for i in c_list])
-                print([c_list[i]/(a_w_list[i]+0.00000000001) for i in range(len(c_list))])
-                # quit()
-                print()
-                if resultfile != '':
-                    with open(resultfile,mode="a") as f:
-                        f.write("ccr:{0}\n".format(ccr))
-                        f.write("deadline_alpha:{0}\n".format(deadline_alpha))
-                        f.write("application_average_interval:{0}\n".format(application_average_interval))
-                        f.write("success_number:"+str([i/exp_num for i in a_list])+"\n")
-                        f.write("total_cost:"+str([i/exp_num for i in c_list])+"\n")
-                        f.write("normalized_cost:"+str([c_list[i]/(a_w_list[i]+0.00000000001) for i in range(len(c_list))])+"\n")
+                a_list[1]+=_a
+                c_list[1]+=_c
+                a_w_list[1] += a_w
+            print("deadline_alpha",deadline_alpha)
+            print("application_average_interval",application_average_interval)
+            print([i/exp_num for i in a_list])
+            print([i/exp_num for i in c_list])
+            print([c_list[i]/(a_w_list[i]+0.00000000001) for i in range(len(c_list))])
+            # quit()
+            print()
+            if resultfile != '':
+                with open(resultfile,mode="a") as f:
+                    f.write("ccr:{0}\n".format(ccr))
+                    f.write("deadline_alpha:{0}\n".format(deadline_alpha))
+                    f.write("application_average_interval:{0}\n".format(application_average_interval))
+                    f.write("success_number:"+str([i/exp_num for i in a_list])+"\n")
+                    f.write("total_cost:"+str([i/exp_num for i in c_list])+"\n")
+                    f.write("normalized_cost:"+str([c_list[i]/(a_w_list[i]+0.00000000001) for i in range(len(c_list))])+"\n")
 
