@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-08-02 15:36:31
 LastEditors: loujiong
-LastEditTime: 2021-09-12 22:24:07
+LastEditTime: 2021-09-12 23:16:39
 Description: 
 Email:  413012592@qq.com
 '''
@@ -386,7 +386,7 @@ if __name__ == '__main__':
                     application_num=application_num,
                     application_average_interval=application_average_interval,
                     edge_number=edge_number,
-                    scheduler=utils.get_node_with_earliest_finish_time,
+                    scheduler=utils.get_node_with_earliest_finish_time_without_cloud,
                     random_seed=random_seed,
                     is_draw_task_graph=is_draw_task_graph,
                     is_multiple=False,
@@ -410,7 +410,7 @@ if __name__ == '__main__':
                     application_average_interval=application_average_interval,
                     edge_number=edge_number,
                     scheduler=utils.
-                    get_node_with_earliest_finish_time,
+                    get_node_with_least_cost_constrained_by_subdeadline_without_cloud,
                     random_seed=random_seed,
                     is_draw_task_graph=is_draw_task_graph,
                     is_multiple=is_multiple,

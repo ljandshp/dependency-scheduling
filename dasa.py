@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-09-07 16:14:30
 LastEditors: loujiong
-LastEditTime: 2021-09-12 22:16:27
+LastEditTime: 2021-09-12 23:18:23
 Description: 
 Email:  413012592@qq.com
 '''
@@ -372,14 +372,14 @@ def re_scheduling(is_draw=False,
             each_application_time += _find_time
         
         interested_time_st = time.time()
-        if not application_list[_release_index].is_accept:
-            #进行有关cloud的调度
-            re = utils.schedule_with_cloud(application_list[_release_index],edge_list,cloud)
+        # if not application_list[_release_index].is_accept:
+        #     #进行有关cloud的调度
+        #     re = utils.schedule_with_cloud(application_list[_release_index],edge_list,cloud)
 
 
         # utils.adjust_task_start_finish_time(application_list[_release_index],edge_list,cloud)
 
-        utils.adjust(application_list[_release_index],edge_list,cloud)
+        # utils.adjust(application_list[_release_index],edge_list,cloud)
         interested_time[2] += time.time() - interested_time_st
 
         new_finish_task_set = [np.empty((0,4)) for i in range(edge_number)]
@@ -485,7 +485,7 @@ if __name__ == '__main__':
                     application_num=application_num,
                     application_average_interval=application_average_interval,
                     edge_number=edge_number,
-                    scheduler=utils2.get_node_with_earliest_finish_time,
+                    scheduler=utils2.get_node_with_earliest_finish_time_without_cloud,
                     random_seed=random_seed,
                     is_draw_task_graph=is_draw_task_graph,
                     is_multiple=False,
