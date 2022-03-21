@@ -1,0 +1,140 @@
+edge_number:20
+ccr:0.1
+deadline_alpha:0.0
+application_average_interval:120
+success_number:[0.0, 0.5324]
+total_cost:[0.0, 4058454.5964203514]
+normalized_cost:[0.0, 39.97610348255272]
+edge_number:20
+ccr:0.1
+deadline_alpha:0.05
+application_average_interval:120
+success_number:[0.0, 0.562]
+total_cost:[0.0, 4004899.052928034]
+normalized_cost:[0.0, 37.51930535141642]
+edge_number:20
+ccr:0.1
+deadline_alpha:0.1
+application_average_interval:120
+success_number:[0.096, 0.5635999999999999]
+total_cost:[900027.9337963716, 3689766.1179225356]
+normalized_cost:[44.792476540570284, 34.66104947187251]
+edge_number:20
+ccr:0.1
+deadline_alpha:0.15000000000000002
+application_average_interval:120
+success_number:[0.6083999999999999, 0.5576000000000001]
+total_cost:[5235456.775637289, 3274381.178599067]
+normalized_cost:[42.294774900203194, 31.06437587466951]
+edge_number:20
+ccr:0.1
+deadline_alpha:0.2
+application_average_interval:120
+success_number:[0.8528, 0.5296]
+total_cost:[7117398.099490633, 2802462.651499484]
+normalized_cost:[42.43312868792404, 27.989380835889094]
+edge_number:20
+ccr:0.1
+deadline_alpha:0.25
+application_average_interval:120
+success_number:[0.9823999999999999, 0.5396]
+total_cost:[7970365.594874975, 2513747.272053271]
+normalized_cost:[42.03367968513165, 24.61966625516225]
+edge_number:20
+ccr:0.1
+deadline_alpha:0.30000000000000004
+application_average_interval:120
+success_number:[0.9996, 0.5536000000000001]
+total_cost:[8065231.126566726, 2348963.7847936274]
+normalized_cost:[41.898913769004714, 22.30905211807831]
+edge_number:20
+ccr:0.1
+deadline_alpha:0.35000000000000003
+application_average_interval:120
+success_number:[1.0, 0.596]
+total_cost:[8067375.65991952, 2314500.849235887]
+normalized_cost:[41.89512179066213, 20.289684855753677]
+edge_number:20
+ccr:0.1
+deadline_alpha:0.4
+application_average_interval:120
+success_number:[1.0, 0.6356]
+total_cost:[8067375.65991952, 2308816.519972123]
+normalized_cost:[41.89512179066213, 18.946231403756297]
+edge_number:20
+ccr:0.1
+deadline_alpha:0.45
+application_average_interval:120
+success_number:[1.0, 0.6888]
+total_cost:[8067375.65991952, 2341770.4489579024]
+normalized_cost:[41.89512179066213, 17.679322182899796]
+edge_number:20
+ccr:1
+deadline_alpha:0.0
+application_average_interval:120
+success_number:[0.0, 0.3348]
+total_cost:[0.0, 787999.168342585]
+normalized_cost:[0.0, 12.559614742320584]
+edge_number:20
+ccr:1
+deadline_alpha:0.05
+application_average_interval:120
+success_number:[0.0, 0.42200000000000004]
+total_cost:[0.0, 955305.7501604073]
+normalized_cost:[0.0, 12.048733981756925]
+edge_number:20
+ccr:1
+deadline_alpha:0.1
+application_average_interval:120
+success_number:[0.0, 0.5104]
+total_cost:[0.0, 1113607.1375244586]
+normalized_cost:[0.0, 11.535929564879602]
+edge_number:20
+ccr:1
+deadline_alpha:0.15000000000000002
+application_average_interval:120
+success_number:[0.0, 0.6144000000000001]
+total_cost:[0.0, 1294330.5168900152]
+normalized_cost:[0.0, 11.06786511078621]
+edge_number:20
+ccr:1
+deadline_alpha:0.2
+application_average_interval:120
+success_number:[0.005200000000000001, 0.6956000000000001]
+total_cost:[14913.636598806097, 1420056.2086164448]
+normalized_cost:[13.634516214088292, 10.684267696366353]
+edge_number:20
+ccr:1
+deadline_alpha:0.25
+application_average_interval:120
+success_number:[0.1336, 0.7748]
+total_cost:[379802.0389706252, 1540386.5782460407]
+normalized_cost:[13.490409734906022, 10.387413614440332]
+edge_number:20
+ccr:1
+deadline_alpha:0.30000000000000004
+application_average_interval:120
+success_number:[0.34600000000000003, 0.8712]
+total_cost:[964796.6494771314, 1701642.7922192297]
+normalized_cost:[13.445351588797278, 10.171135674762144]
+edge_number:20
+ccr:1
+deadline_alpha:0.35000000000000003
+application_average_interval:120
+success_number:[0.48919999999999997, 0.9112]
+total_cost:[1363110.087078251, 1752838.1420294861]
+normalized_cost:[13.548167056428321, 10.006796490454056]
+edge_number:20
+ccr:1
+deadline_alpha:0.4
+application_average_interval:120
+success_number:[0.6756, 0.9452]
+total_cost:[1854566.9494548931, 1796292.4476801946]
+normalized_cost:[13.627043952101719, 9.876222209815918]
+edge_number:20
+ccr:1
+deadline_alpha:0.45
+application_average_interval:120
+success_number:[0.7764, 0.9708]
+total_cost:[2097299.873465605, 1829284.7963513732]
+normalized_cost:[13.64327691372404, 9.786124251411767]

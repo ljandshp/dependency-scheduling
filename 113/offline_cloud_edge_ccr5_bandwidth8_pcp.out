@@ -1,0 +1,70 @@
+edge_number:20
+ccr:0.5
+deadline_alpha:0.0
+application_average_interval:120
+success_number:[0.0, 0.3984]
+total_cost:[0.0, 997512.8044288236]
+normalized_cost:[0.0, 13.165658678385375]
+edge_number:20
+ccr:0.5
+deadline_alpha:0.05
+application_average_interval:120
+success_number:[0.0, 0.5456]
+total_cost:[0.0, 1305967.7096425884]
+normalized_cost:[0.0, 12.661276086708032]
+edge_number:20
+ccr:0.5
+deadline_alpha:0.1
+application_average_interval:120
+success_number:[0.0, 0.6215999999999999]
+total_cost:[0.0, 1430874.4109203483]
+normalized_cost:[0.0, 12.13176748831626]
+edge_number:20
+ccr:0.5
+deadline_alpha:0.15000000000000002
+application_average_interval:120
+success_number:[0.005200000000000001, 0.7032]
+total_cost:[15173.660504400032, 1556270.9917134538]
+normalized_cost:[13.570310607490278, 11.648591695298276]
+edge_number:20
+ccr:0.5
+deadline_alpha:0.2
+application_average_interval:120
+success_number:[0.29880000000000007, 0.7767999999999999]
+total_cost:[831115.9925694979, 1665660.652806438]
+normalized_cost:[13.36502808026805, 11.205780607594553]
+edge_number:20
+ccr:0.5
+deadline_alpha:0.25
+application_average_interval:120
+success_number:[0.4812, 0.8540000000000001]
+total_cost:[1349073.5618998143, 1769077.1001636419]
+normalized_cost:[13.5195987732938, 10.791569580498427]
+edge_number:20
+ccr:0.5
+deadline_alpha:0.30000000000000004
+application_average_interval:120
+success_number:[0.6195999999999999, 0.9056000000000001]
+total_cost:[1739473.32479193, 1824439.3902905143]
+normalized_cost:[13.670577676012602, 10.475392848906505]
+edge_number:20
+ccr:0.5
+deadline_alpha:0.35000000000000003
+application_average_interval:120
+success_number:[0.7667999999999999, 0.9400000000000001]
+total_cost:[2092239.3124555605, 1847748.236730889]
+normalized_cost:[13.751159927928127, 10.224567935830523]
+edge_number:20
+ccr:0.5
+deadline_alpha:0.4
+application_average_interval:120
+success_number:[0.9263999999999999, 0.9715999999999999]
+total_cost:[2488908.5630714684, 1879359.5100717086]
+normalized_cost:[13.827466907931866, 10.05680008657394]
+edge_number:20
+ccr:0.5
+deadline_alpha:0.45
+application_average_interval:120
+success_number:[0.998, 0.9868]
+total_cost:[2663908.6935705193, 1885419.7463228658]
+normalized_cost:[13.856914334628186, 9.926238508186282]

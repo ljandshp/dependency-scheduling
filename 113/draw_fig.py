@@ -2,7 +2,7 @@
 Author: 娄炯
 Date: 2021-09-07 18:34:35
 LastEditors: loujiong
-LastEditTime: 2021-10-29 13:10:39
+LastEditTime: 2021-11-05 09:53:02
 Description: draw simulation results
 Email:  413012592@qq.com
 '''
@@ -303,7 +303,7 @@ def four_graph():
     plt.subplots_adjust(bottom=0.10)
     plt.xlabel(r'$\beta$')
     plt.ylabel("NC") 
-    plt.ylim(5,15)
+    plt.ylim(7,15)
     # plt.title("A simple plot")
     plt.show()
 
@@ -356,7 +356,8 @@ def draw_sr():
                 success_number = json.loads(i[15:-1])
                 baseline_BDAS.append(success_number[1])
     
-    for ccr in [0.1,0.3,0.5,0.7,0.9,1.1]:
+    for ccr in [0.1,1]:
+        print(ccr)
         _x = [x[i] for i in range(len(x)) if ccr_list[i] == ccr]
         _dasa = [dasa[i] for i in range(len(x)) if ccr_list[i] == ccr]
         _baseline_heft = [baseline_heft[i] for i in range(len(x)) if ccr_list[i] == ccr]
@@ -433,7 +434,7 @@ def draw_nc():
                 success_number = json.loads(i[16:-1])
                 baseline_BDAS.append(success_number[1])
     
-    for ccr in [0.1,0.3,0.5,0.7,0.9,1.1]:
+    for ccr in [0.1,1]:
         _x = [x[i] for i in range(len(x)) if ccr_list[i] == ccr]
         _dasa = [dasa[i] for i in range(len(x)) if ccr_list[i] == ccr]
         _baseline_heft = [baseline_heft[i] for i in range(len(x)) if ccr_list[i] == ccr]
@@ -455,7 +456,9 @@ def draw_nc():
         plt.subplots_adjust(bottom=0.10)
         plt.xlabel(r'$\beta$',fontsize=17)
         plt.ylabel("NC",fontsize=17) 
-        plt.ylim(5,15)
+        ymin = min(min(_dasa),min(_baseline_heft),min(_baseline_pcp),min(_baseline_prolis),min(_baseline_BDAS))
+        ymax = max(max(_dasa),max(_baseline_heft),max(_baseline_pcp),max(_baseline_prolis),max(_baseline_BDAS))
+        plt.ylim(ymin*0.95,ymax*1.05)
         # plt.show()
         plt.tight_layout()
         plt.savefig('offline_only_edge_ccr{0}_nc.pdf'.format(int(ccr*10)))
@@ -469,7 +472,7 @@ def draw_sr_cloud():
     baseline_pcp = []
     baseline_prolis = []
     baseline_BDAS = []
-    with open("offline_cloud_edge_ccrall_dasa.out","r") as f:
+    with open("offline_cloud_ccrall_dasa.out","r") as f:
         t = f.readlines()
         for i in t:
             if "deadline_alpha" in i:
@@ -482,35 +485,35 @@ def draw_sr_cloud():
                 ccr = float(i[4:-1])
                 ccr_list.append(ccr)
 
-    with open("offline_cloud_edge_ccrall_heft.out","r") as f:
+    with open("offline_cloud_ccrall_heft.out","r") as f:
         t = f.readlines()
         for i in t:
             if "success_number:" in i:
                 success_number = json.loads(i[15:-1])
                 baseline_heft.append(success_number[1])
     
-    with open("offline_cloud_edge_ccrall_pcp.out","r") as f:
+    with open("offline_cloud_ccrall_pcp.out","r") as f:
         t = f.readlines()
         for i in t:
             if "success_number:" in i:
                 success_number = json.loads(i[15:-1])
                 baseline_pcp.append(success_number[1])
     
-    with open("offline_cloud_edge_ccrall_prolis.out","r") as f:
+    with open("offline_cloud_ccrall_prolis.out","r") as f:
         t = f.readlines()
         for i in t:
             if "success_number:" in i:
                 success_number = json.loads(i[15:-1])
                 baseline_prolis.append(success_number[1])
     
-    with open("offline_cloud_edge_ccrall_bdas.out","r") as f:
+    with open("offline_cloud_ccrall_bdas.out","r") as f:
         t = f.readlines()
         for i in t:
             if "success_number:" in i:
                 success_number = json.loads(i[15:-1])
                 baseline_BDAS.append(success_number[1])
     
-    for ccr in [0.1,0.3,0.5,0.7,0.9,1.1]:
+    for ccr in [0.1,1]:
         _x = [x[i] for i in range(len(x)) if ccr_list[i] == ccr]
         _dasa = [dasa[i] for i in range(len(x)) if ccr_list[i] == ccr]
         _baseline_heft = [baseline_heft[i] for i in range(len(x)) if ccr_list[i] == ccr]
@@ -535,7 +538,7 @@ def draw_sr_cloud():
         plt.ylim(0,1.05)
         # plt.show()
         plt.tight_layout()
-        plt.savefig('offline_cloud_edge_ccr{0}_sr.pdf'.format(int(ccr*10)))
+        plt.savefig('offline_cloud_ccr{0}_sr.pdf'.format(int(ccr*10)))
         plt.clf()
 
 def draw_nc_cloud():
@@ -546,7 +549,7 @@ def draw_nc_cloud():
     baseline_pcp = []
     baseline_prolis = []
     baseline_BDAS = []
-    with open("offline_cloud_edge_ccrall_dasa.out","r") as f:
+    with open("offline_cloud_ccrall_dasa.out","r") as f:
         t = f.readlines()
         for i in t:
             if "deadline_alpha" in i:
@@ -559,35 +562,35 @@ def draw_nc_cloud():
                 ccr = float(i[4:-1])
                 ccr_list.append(ccr)
 
-    with open("offline_cloud_edge_ccrall_heft.out","r") as f:
+    with open("offline_cloud_ccrall_heft.out","r") as f:
         t = f.readlines()
         for i in t:
             if "normalized_cost:" in i:
                 success_number = json.loads(i[16:-1])
                 baseline_heft.append(success_number[1])
     
-    with open("offline_cloud_edge_ccrall_pcp.out","r") as f:
+    with open("offline_cloud_ccrall_pcp.out","r") as f:
         t = f.readlines()
         for i in t:
             if "normalized_cost:" in i:
                 success_number = json.loads(i[16:-1])
                 baseline_pcp.append(success_number[1])
     
-    with open("offline_cloud_edge_ccrall_prolis.out","r") as f:
+    with open("offline_cloud_ccrall_prolis.out","r") as f:
         t = f.readlines()
         for i in t:
             if "normalized_cost:" in i:
                 success_number = json.loads(i[16:-1])
                 baseline_prolis.append(success_number[1])
     
-    with open("offline_cloud_edge_ccrall_bdas.out","r") as f:
+    with open("offline_cloud_ccrall_bdas.out","r") as f:
         t = f.readlines()
         for i in t:
             if "normalized_cost:" in i:
                 success_number = json.loads(i[16:-1])
                 baseline_BDAS.append(success_number[1])
     
-    for ccr in [0.1,0.3,0.5,0.7,0.9,1.1]:
+    for ccr in [0.1,1]:
         _x = [x[i] for i in range(len(x)) if ccr_list[i] == ccr]
         _dasa = [dasa[i] for i in range(len(x)) if ccr_list[i] == ccr]
         _baseline_heft = [baseline_heft[i] for i in range(len(x)) if ccr_list[i] == ccr]
@@ -605,15 +608,19 @@ def draw_nc_cloud():
         plt.xticks(_x, _x, rotation=1,fontsize=17)
         plt.yticks(fontsize=17)
         
+        ymin = min(min(_dasa),min(_baseline_heft),min(_baseline_pcp),min(_baseline_prolis),min(_baseline_BDAS))
+        ymax = max(max(_dasa),max(_baseline_heft),max(_baseline_pcp),max(_baseline_prolis),max(_baseline_BDAS))
         plt.margins(0)
         plt.subplots_adjust(bottom=0.10)
         plt.xlabel(r'$\beta$',fontsize=17)
         plt.ylabel("NC",fontsize=17)
-        maxy = max([max(_dasa),max(_baseline_heft),max(_baseline_pcp),max(_baseline_prolis),max(_baseline_BDAS),]) 
-        plt.ylim(0,maxy)
+        plt.ylim(ymin*0.95,ymax*1.05)
+        # print(ymin,ymax)
+        # maxy = max([max(_dasa),max(_baseline_heft),max(_baseline_pcp),max(_baseline_prolis),max(_baseline_BDAS),]) 
+        # plt.ylim(0,maxy)
         # plt.show()
         plt.tight_layout()
-        plt.savefig('offline_cloud_edge_ccr{0}_nc.pdf'.format(int(ccr*10)))
+        plt.savefig('offline_cloud_ccr{0}_nc.pdf'.format(int(ccr*10)))
         plt.clf()
 
 '''
@@ -743,7 +750,7 @@ def draw_runtime_bar():
     plt.savefig('montage_runtime.pdf')
     return
 
-def draw_sr_cloud_bandwidth():
+def draw_sr_cloud_bandwidth(bandwidth_factor = 2):
     ccr_list = []
     x = []
     dasa= []
@@ -752,7 +759,7 @@ def draw_sr_cloud_bandwidth():
     baseline_prolis = []
     baseline_BDAS = []
     dasa_w_refine = []
-    with open("offline_cloud_edge_ccr5_bandwidth8_dasa.out","r") as f:
+    with open("offline_cloud_edge_ccr5_bandwidth{0}_dasa.out".format(bandwidth_factor),"r") as f:
         t = f.readlines()
         for i in t:
             if "deadline_alpha" in i:
@@ -765,28 +772,28 @@ def draw_sr_cloud_bandwidth():
                 ccr = float(i[4:-1])
                 ccr_list.append(ccr)
 
-    with open("offline_cloud_edge_ccr5_bandwidth8_heft.out","r") as f:
+    with open("offline_cloud_edge_ccr5_bandwidth{0}_heft.out".format(bandwidth_factor),"r") as f:
         t = f.readlines()
         for i in t:
             if "success_number:" in i:
                 success_number = json.loads(i[15:-1])
                 baseline_heft.append(success_number[1])
     
-    with open("offline_cloud_edge_ccr5_bandwidth8_pcp.out","r") as f:
+    with open("offline_cloud_edge_ccr5_bandwidth{0}_pcp.out".format(bandwidth_factor),"r") as f:
         t = f.readlines()
         for i in t:
             if "success_number:" in i:
                 success_number = json.loads(i[15:-1])
                 baseline_pcp.append(success_number[1])
     
-    with open("offline_cloud_edge_ccr5_bandwidth8_prolis.out","r") as f:
+    with open("offline_cloud_edge_ccr5_bandwidth{0}_prolis.out".format(bandwidth_factor),"r") as f:
         t = f.readlines()
         for i in t:
             if "success_number:" in i:
                 success_number = json.loads(i[15:-1])
                 baseline_prolis.append(success_number[1])
     
-    with open("offline_cloud_edge_ccr5_bandwidth8_bdas.out","r") as f:
+    with open("offline_cloud_edge_ccr5_bandwidth{0}_bdas.out".format(bandwidth_factor),"r") as f:
         t = f.readlines()
         for i in t:
             if "success_number:" in i:
@@ -827,10 +834,10 @@ def draw_sr_cloud_bandwidth():
         plt.ylim(0,1.05)
         # plt.show()
         plt.tight_layout()
-        plt.savefig('offline_cloud_edge_ccr{0}_bandwidth8_sr.pdf'.format(int(ccr*10)))
+        plt.savefig('offline_cloud_edge_ccr{0}_bandwidth{1}_sr.pdf'.format(int(ccr*10),bandwidth_factor))
         plt.clf()
 
-def draw_nc_cloud_bandwidth():
+def draw_nc_cloud_bandwidth(bandwidth_factor = 2):
     ccr_list = []
     x = []
     dasa= []
@@ -839,7 +846,7 @@ def draw_nc_cloud_bandwidth():
     baseline_prolis = []
     baseline_BDAS = []
     dasa_w_refine = []
-    with open("offline_cloud_edge_ccr5_bandwidth8_dasa.out","r") as f:
+    with open("offline_cloud_edge_ccr5_bandwidth{0}_dasa.out".format(bandwidth_factor),"r") as f:
         t = f.readlines()
         for i in t:
             if "deadline_alpha" in i:
@@ -852,28 +859,28 @@ def draw_nc_cloud_bandwidth():
                 ccr = float(i[4:-1])
                 ccr_list.append(ccr)
 
-    with open("offline_cloud_edge_ccr5_bandwidth8_heft.out","r") as f:
+    with open("offline_cloud_edge_ccr5_bandwidth{0}_heft.out".format(bandwidth_factor),"r") as f:
         t = f.readlines()
         for i in t:
             if "normalized_cost:" in i:
                 success_number = json.loads(i[16:-1])
                 baseline_heft.append(success_number[1])
     
-    with open("offline_cloud_edge_ccr5_bandwidth8_pcp.out","r") as f:
+    with open("offline_cloud_edge_ccr5_bandwidth{0}_pcp.out".format(bandwidth_factor),"r") as f:
         t = f.readlines()
         for i in t:
             if "normalized_cost:" in i:
                 success_number = json.loads(i[16:-1])
                 baseline_pcp.append(success_number[1])
     
-    with open("offline_cloud_edge_ccr5_bandwidth8_prolis.out","r") as f:
+    with open("offline_cloud_edge_ccr5_bandwidth{0}_prolis.out".format(bandwidth_factor),"r") as f:
         t = f.readlines()
         for i in t:
             if "normalized_cost:" in i:
                 success_number = json.loads(i[16:-1])
                 baseline_prolis.append(success_number[1])
     
-    with open("offline_cloud_edge_ccr5_bandwidth8_bdas.out","r") as f:
+    with open("offline_cloud_edge_ccr5_bandwidth{0}_bdas.out".format(bandwidth_factor),"r") as f:
         t = f.readlines()
         for i in t:
             if "normalized_cost:" in i:
@@ -892,10 +899,10 @@ def draw_nc_cloud_bandwidth():
         _dasa = [dasa[i] for i in range(len(x)) if ccr_list[i] == ccr]
         _baseline_heft = [baseline_heft[i] for i in range(len(x)) if ccr_list[i] == ccr]
         _baseline_pcp = [baseline_pcp[i] for i in range(len(x)) if ccr_list[i] == ccr]
-        print(baseline_prolis)
-        print(baseline_pcp)
-        print(baseline_heft)
-        print(ccr_list)
+        # print(baseline_prolis)
+        # print(baseline_pcp)
+        # print(baseline_heft)
+        # print(ccr_list)
         _baseline_prolis = [baseline_prolis[i] for i in range(len(x)) if ccr_list[i] == ccr]
         _baseline_BDAS = [baseline_BDAS[i] for i in range(len(x)) if ccr_list[i] == ccr]
         # _dasa_w_refine = [dasa_w_refine[i] for i in range(len(x)) if ccr_list[i] == ccr]
@@ -915,12 +922,192 @@ def draw_nc_cloud_bandwidth():
         plt.subplots_adjust(bottom=0.10)
         plt.xlabel(r'$\beta$',fontsize=17)
         plt.ylabel("NC",fontsize=17)
-        maxy = max([max(_dasa),max(_baseline_heft),max(_baseline_pcp),max(_baseline_prolis),max(_baseline_BDAS),]) 
-        plt.ylim(0,maxy)
+        ymin = min(min(_dasa),min(_baseline_heft),min(_baseline_pcp),min(_baseline_prolis),min(_baseline_BDAS))
+        ymax = max(max(_dasa),max(_baseline_heft),max(_baseline_pcp),max(_baseline_prolis),max(_baseline_BDAS))
+        plt.ylim(ymin*0.95,ymax*1.05)
         # plt.show()
         plt.tight_layout()
-        plt.savefig('offline_cloud_edge_ccr{0}_bandwidth8_nc.pdf'.format(int(ccr*10)))
+        plt.savefig('offline_cloud_edge_ccr{0}_bandwidth{1}_nc.pdf'.format(int(ccr*10),bandwidth_factor))
         plt.clf()
+
+
+def draw_sr_cloud_edge_number():
+    ccr_list = []
+    x = []
+    dasa= []
+    baseline_heft = []
+    baseline_pcp = []
+    baseline_prolis = []
+    baseline_BDAS = []
+    dasa_w_refine = []
+    with open("edge_number_dasa.out","r") as f:
+        t = f.readlines()
+        for i in t:
+            if "edge_number" in i:
+                edge_number = float(i[12:-1])
+                x.append(edge_number)
+            if "success_number:" in i:
+                success_number = json.loads(i[15:-1])
+                dasa.append(success_number[1])
+            if "ccr:" in i:
+                ccr = float(i[4:-1])
+                ccr_list.append(ccr)
+
+    with open("edge_number_heft.out","r") as f:
+        t = f.readlines()
+        for i in t:
+            if "success_number:" in i:
+                success_number = json.loads(i[15:-1])
+                baseline_heft.append(success_number[1])
+    
+    with open("edge_number_pcp.out","r") as f:
+        t = f.readlines()
+        for i in t:
+            if "success_number:" in i:
+                success_number = json.loads(i[15:-1])
+                baseline_pcp.append(success_number[1])
+    
+    with open("edge_number_prolis.out","r") as f:
+        t = f.readlines()
+        for i in t:
+            if "success_number:" in i:
+                success_number = json.loads(i[15:-1])
+                baseline_prolis.append(success_number[1])
+    
+    with open("edge_number_bdas.out","r") as f:
+        t = f.readlines()
+        for i in t:
+            if "success_number:" in i:
+                success_number = json.loads(i[15:-1])
+                baseline_BDAS.append(success_number[1])
+    
+    # with open("offline_cloud_edge_ccr5_bandwidth8_dasa_w_refine.out","r") as f:
+    #     t = f.readlines()
+    #     for i in t:
+    #         if "success_number:" in i:
+    #             success_number = json.loads(i[15:-1])
+    #             dasa_w_refine.append(success_number[1])
+    
+    for ccr in [0.5]:
+        _x = [x[i] for i in range(len(x)) if ccr_list[i] == ccr]
+        _dasa = [dasa[i] for i in range(len(x)) if ccr_list[i] == ccr]
+        _baseline_heft = [baseline_heft[i] for i in range(len(x)) if ccr_list[i] == ccr]
+        _baseline_pcp = [baseline_pcp[i] for i in range(len(x)) if ccr_list[i] == ccr]
+        _baseline_prolis = [baseline_prolis[i] for i in range(len(x)) if ccr_list[i] == ccr]
+        _baseline_BDAS = [baseline_BDAS[i] for i in range(len(x)) if ccr_list[i] == ccr]
+        # _dasa_w_refine = [dasa_w_refine[i] for i in range(len(x)) if ccr_list[i] == ccr]
+
+
+        plt.plot(_x, _dasa, marker='o', ms=10,label='DCDS')
+        plt.plot(_x, _baseline_heft, marker='*', ms=10,label='HEFT')
+        plt.plot(_x, _baseline_pcp, marker='s', ms=10,label='PCP')
+        plt.plot(_x, _baseline_prolis, marker='.', ms=10,label='ProLis')
+        plt.plot(_x, _baseline_BDAS, marker='p', ms=10,label='BDAS')
+        # plt.plot(_x, _dasa_w_refine, marker='h', ms=10,label='dasa without refine')
+        plt.legend(fontsize=17) 
+        plt.xticks(_x, _x, rotation=1,fontsize=17)
+        plt.yticks(fontsize=17)
+        
+        plt.margins(0)
+        plt.subplots_adjust(bottom=0.10)
+        plt.xlabel("Number of Edge Servers",fontsize=17)
+        plt.ylabel("SR",fontsize=17) 
+        plt.ylim(0,1.05)
+        # plt.show()
+        plt.tight_layout()
+        plt.savefig('edge_number_cloud_sr.pdf')
+        plt.clf()
+
+def draw_nc_cloud_edge_number():
+    ccr_list = []
+    x = []
+    dasa= []
+    baseline_heft = []
+    baseline_pcp = []
+    baseline_prolis = []
+    baseline_BDAS = []
+    dasa_w_refine = []
+    with open("edge_number_dasa.out","r") as f:
+        t = f.readlines()
+        for i in t:
+            if "edge_number" in i:
+                edge_number = float(i[12:-1])
+                x.append(edge_number)
+            if "normalized_cost:" in i:
+                success_number = json.loads(i[16:-1])
+                dasa.append(success_number[1])
+            if "ccr:" in i:
+                ccr = float(i[4:-1])
+                ccr_list.append(ccr)
+
+    with open("edge_number_heft.out","r") as f:
+        t = f.readlines()
+        for i in t:
+            if "normalized_cost:" in i:
+                success_number = json.loads(i[16:-1])
+                baseline_heft.append(success_number[1])
+    
+    with open("edge_number_pcp.out","r") as f:
+        t = f.readlines()
+        for i in t:
+            if "normalized_cost:" in i:
+                success_number = json.loads(i[16:-1])
+                baseline_pcp.append(success_number[1])
+    
+    with open("edge_number_prolis.out","r") as f:
+        t = f.readlines()
+        for i in t:
+            if "normalized_cost:" in i:
+                success_number = json.loads(i[16:-1])
+                baseline_prolis.append(success_number[1])
+    
+    with open("edge_number_bdas.out","r") as f:
+        t = f.readlines()
+        for i in t:
+            if "normalized_cost:" in i:
+                success_number = json.loads(i[16:-1])
+                baseline_BDAS.append(success_number[1])
+    
+    # with open("offline_cloud_edge_ccr5_bandwidth8_dasa_w_refine.out","r") as f:
+    #     t = f.readlines()
+    #     for i in t:
+    #         if "normalized_cost:" in i:
+    #             success_number = json.loads(i[16:-1])
+    #             dasa_w_refine.append(success_number[1])
+    
+    for ccr in [0.5]:
+        _x = [x[i] for i in range(len(x)) if ccr_list[i] == ccr]
+        _dasa = [dasa[i] for i in range(len(x)) if ccr_list[i] == ccr]
+        _baseline_heft = [baseline_heft[i] for i in range(len(x)) if ccr_list[i] == ccr]
+        _baseline_pcp = [baseline_pcp[i] for i in range(len(x)) if ccr_list[i] == ccr]
+        _baseline_prolis = [baseline_prolis[i] for i in range(len(x)) if ccr_list[i] == ccr]
+        _baseline_BDAS = [baseline_BDAS[i] for i in range(len(x)) if ccr_list[i] == ccr]
+        # _dasa_w_refine = [dasa_w_refine[i] for i in range(len(x)) if ccr_list[i] == ccr]
+
+
+        plt.plot(_x, _dasa, marker='o', ms=10,label='DCDS')
+        plt.plot(_x, _baseline_heft, marker='*', ms=10,label='HEFT')
+        plt.plot(_x, _baseline_pcp, marker='s', ms=10,label='PCP')
+        plt.plot(_x, _baseline_prolis, marker='.', ms=10,label='ProLis')
+        plt.plot(_x, _baseline_BDAS, marker='p', ms=10,label='BDAS')
+        # plt.plot(_x, _dasa_w_refine, marker='h', ms=10,label='dasa without refine')
+        plt.legend(fontsize=17) 
+        plt.xticks(_x, _x, rotation=1,fontsize=17)
+        plt.yticks(fontsize=17)
+        
+        plt.margins(0)
+        plt.subplots_adjust(bottom=0.10)
+        plt.xlabel("Number of Edge Servers",fontsize=17)
+        plt.ylabel("NC",fontsize=17)
+        ymin = min(min(_dasa),min(_baseline_heft),min(_baseline_pcp),min(_baseline_prolis),min(_baseline_BDAS))
+        ymax = max(max(_dasa),max(_baseline_heft),max(_baseline_pcp),max(_baseline_prolis),max(_baseline_BDAS))
+        plt.ylim(ymin*0.95,ymax*1.05)
+        # plt.show()
+        plt.tight_layout()
+        plt.savefig("edge_number_cloud_nc.pdf")
+        plt.clf()
+
+
 
 def draw_runtime_line():
     plt.figure(figsize=(8,4))
@@ -1017,7 +1204,7 @@ def draw_sr_cloud_lambda():
     #             success_number = json.loads(i[15:-1])
     #             dasa_w_refine.append(success_number[1])
     
-    for application_average_interval in [50,150,250]:
+    for application_average_interval in [50,250]:
         _x = [x[i] for i in range(len(x)) if application_average_interval_list[i] == application_average_interval]
         _dasa = [dasa[i] for i in range(len(x)) if application_average_interval_list[i] == application_average_interval]
         _baseline_heft = [baseline_heft[i] for i in range(len(x)) if application_average_interval_list[i] == application_average_interval]
@@ -1104,7 +1291,7 @@ def draw_nc_cloud_lambda():
     #             success_number = json.loads(i[16:-1])
     #             dasa_w_refine.append(success_number[1])
     
-    for application_average_interval in [50,150,250]:
+    for application_average_interval in [50,250]:
         _x = [x[i] for i in range(len(x)) if application_average_interval_list[i] == application_average_interval]
         _dasa = [dasa[i] for i in range(len(x)) if application_average_interval_list[i] == application_average_interval]
         _baseline_heft = [baseline_heft[i] for i in range(len(x)) if application_average_interval_list[i] == application_average_interval]
@@ -1128,8 +1315,9 @@ def draw_nc_cloud_lambda():
         plt.subplots_adjust(bottom=0.10)
         plt.xlabel(r'$\beta$',fontsize=17)
         plt.ylabel("NC",fontsize=17)
-        maxy = max([max(_dasa),max(_baseline_heft),max(_baseline_pcp),max(_baseline_prolis),max(_baseline_BDAS),]) 
-        plt.ylim(0,maxy)
+        ymin = min(min(_dasa),min(_baseline_heft),min(_baseline_pcp),min(_baseline_prolis),min(_baseline_BDAS))
+        ymax = max(max(_dasa),max(_baseline_heft),max(_baseline_pcp),max(_baseline_prolis),max(_baseline_BDAS))
+        plt.ylim(ymin*0.95,ymax*1.05)
         plt.tight_layout()
         plt.savefig('online_cloud_edge_lambda{0}_nc.pdf'.format(application_average_interval))
         plt.clf()
@@ -1177,14 +1365,14 @@ def draw_sr_edge_lambda():
                 success_number = json.loads(i[15:-1])
                 baseline_prolis.append(success_number[1])
     
-    with open("only_cloud_edge_lambdaall_bdas.out","r") as f:
+    with open("online_only_edge_lambdaall_bdas.out","r") as f:
         t = f.readlines()
         for i in t:
             if "success_number:" in i:
                 success_number = json.loads(i[15:-1])
                 baseline_BDAS.append(success_number[1])
     
-    for application_average_interval in [50,150,250]:
+    for application_average_interval in [50,250]:
         _x = [x[i] for i in range(len(x)) if application_average_interval_list[i] == application_average_interval]
         _dasa = [dasa[i] for i in range(len(x)) if application_average_interval_list[i] == application_average_interval]
         _baseline_heft = [baseline_heft[i] for i in range(len(x)) if application_average_interval_list[i] == application_average_interval]
@@ -1271,7 +1459,7 @@ def draw_nc_edge_lambda():
     #             success_number = json.loads(i[16:-1])
     #             dasa_w_refine.append(success_number[1])
     
-    for application_average_interval in [50,150,250]:
+    for application_average_interval in [50,250]:
         _x = [x[i] for i in range(len(x)) if application_average_interval_list[i] == application_average_interval]
         _dasa = [dasa[i] for i in range(len(x)) if application_average_interval_list[i] == application_average_interval]
         _baseline_heft = [baseline_heft[i] for i in range(len(x)) if application_average_interval_list[i] == application_average_interval]
@@ -1295,8 +1483,9 @@ def draw_nc_edge_lambda():
         plt.subplots_adjust(bottom=0.10)
         plt.xlabel(r'$\beta$',fontsize=17)
         plt.ylabel("NC",fontsize=17)
-        maxy = max([max(_dasa),max(_baseline_heft),max(_baseline_pcp),max(_baseline_prolis),max(_baseline_BDAS),]) 
-        plt.ylim(0,maxy)
+        ymin = min(min(_dasa),min(_baseline_heft),min(_baseline_pcp),min(_baseline_prolis),min(_baseline_BDAS))
+        ymax = max(max(_dasa),max(_baseline_heft),max(_baseline_pcp),max(_baseline_prolis),max(_baseline_BDAS))
+        plt.ylim(ymin*0.95,ymax*1.05)
         plt.tight_layout()
         plt.savefig('online_only_edge_lambda{0}_nc.pdf'.format(application_average_interval))
         # plt.show()
@@ -1395,5 +1584,23 @@ if __name__ == '__main__':
 
     # draw_runtime_bar()
 
-    draw_sr_deadline_cloud()
-    draw_nc_deadline_cloud()
+    # draw_sr_deadline_cloud()
+    # draw_nc_deadline_cloud()
+
+
+
+    draw_sr()
+    draw_nc()
+    draw_sr_cloud()
+    draw_nc_cloud()
+    draw_nc_cloud_bandwidth(2)
+    draw_sr_cloud_bandwidth(2)
+    draw_nc_cloud_bandwidth(8)
+    draw_sr_cloud_bandwidth(8)
+    draw_nc_cloud_edge_number()
+    draw_sr_cloud_edge_number()
+    draw_nc_edge_lambda()
+    draw_sr_edge_lambda()
+    draw_sr_cloud_lambda()
+    draw_nc_cloud_lambda()
+

@@ -1,0 +1,70 @@
+edge_number:20
+ccr:0.5
+deadline_alpha:0.0
+application_average_interval:120
+success_number:[0.0, 1.0]
+total_cost:[0.0, 2668382.382552478]
+normalized_cost:[0.0, 13.857319853902588]
+edge_number:20
+ccr:0.5
+deadline_alpha:0.05
+application_average_interval:120
+success_number:[0.0, 1.0]
+total_cost:[0.0, 2668382.382552478]
+normalized_cost:[0.0, 13.857319853902588]
+edge_number:20
+ccr:0.5
+deadline_alpha:0.1
+application_average_interval:120
+success_number:[0.0, 1.0]
+total_cost:[0.0, 2668382.382552478]
+normalized_cost:[0.0, 13.857319853902588]
+edge_number:20
+ccr:0.5
+deadline_alpha:0.15000000000000002
+application_average_interval:120
+success_number:[0.005200000000000001, 1.0]
+total_cost:[15173.660504400032, 2668382.382552478]
+normalized_cost:[13.570310607490278, 13.857319853902588]
+edge_number:20
+ccr:0.5
+deadline_alpha:0.2
+application_average_interval:120
+success_number:[0.29880000000000007, 1.0]
+total_cost:[831115.9925694979, 2668382.382552478]
+normalized_cost:[13.36502808026805, 13.857319853902588]
+edge_number:20
+ccr:0.5
+deadline_alpha:0.25
+application_average_interval:120
+success_number:[0.4812, 1.0]
+total_cost:[1349073.5618998143, 2668382.382552478]
+normalized_cost:[13.5195987732938, 13.857319853902588]
+edge_number:20
+ccr:0.5
+deadline_alpha:0.30000000000000004
+application_average_interval:120
+success_number:[0.6195999999999999, 1.0]
+total_cost:[1739473.32479193, 2668382.382552478]
+normalized_cost:[13.670577676012602, 13.857319853902588]
+edge_number:20
+ccr:0.5
+deadline_alpha:0.35000000000000003
+application_average_interval:120
+success_number:[0.7667999999999999, 1.0]
+total_cost:[2092239.3124555605, 2668382.382552478]
+normalized_cost:[13.751159927928127, 13.857319853902588]
+edge_number:20
+ccr:0.5
+deadline_alpha:0.4
+application_average_interval:120
+success_number:[0.9263999999999999, 1.0]
+total_cost:[2488908.5630714684, 2668382.382552478]
+normalized_cost:[13.827466907931866, 13.857319853902588]
+edge_number:20
+ccr:0.5
+deadline_alpha:0.45
+application_average_interval:120
+success_number:[0.998, 1.0]
+total_cost:[2663908.6935705193, 2668382.382552478]
+normalized_cost:[13.856914334628186, 13.857319853902588]
