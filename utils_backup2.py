@@ -1,8 +1,8 @@
 '''
-Author: 娄炯
+Author: Jiong Lou
 Date: 2021-04-16 13:18:37
 LastEditors: loujiong
-LastEditTime: 2021-08-21 20:25:57
+LastEditTime: 2022-03-23 14:12:37
 Description: utils file
 Email:  413012592@qq.com
 '''
@@ -20,13 +20,14 @@ from collections import deque
 
 class Edge():
     def __init__(self, task_concurrent_capacity, process_data_rate,
-                 upload_data_rate, cost_per_mip = 1):
+                 upload_data_rate, cost_per_mip = 1, edge_number = 1):
         # set 10000 time slots first
         self.task_concurrent_capacity = task_concurrent_capacity
         self.planed_start_finish = [np.array([[0.0,10000000000000]]) for i in range(self.task_concurrent_capacity)]
         self.start_finish = [np.array([[0.0,10000000000000]]) for i in range(self.task_concurrent_capacity)]
         self.process_data_rate = process_data_rate
-        self.upload_data_rate = upload_data_rate
+        self.upload_data_rate_vector =  [3/4*upload_data_rate+1/2*upload_data_rate*random.random() for i in range(edge_number)]
+        self.upload_data_rate = sum(self.upload_data_rate_vector)/len(self.upload_data_rate_vector)
         self.cost_per_mip = cost_per_mip
 
     def find_actual_earliest_start_time_by_planed(self, start_time, runtime, _release_time):
@@ -130,7 +131,7 @@ class Application():
         self.finish_time = -1
         self.release_node = release_node
         # self.generate_application_by_random(task_num = task_num)
-        self.generate_task_graph_by_random_by_level(task_num = task_num,level_num=rd(3,5),jump_num=rd(2,3))
+        self.generate_task_graph_by_random_by_level(task_num = task_num,level_num=rd(3,5),jump_num=2)
         self.dynamic_longest_remain_length = 0
         self.tmax = 0
         self.deadline = 0
@@ -143,7 +144,7 @@ class Application():
             self.task_graph = read_in_task_graph.get_workflow()
             task_num = self.task_graph.number_of_nodes()
         else:
-            edge_num = rd(task_num, min(task_num * task_num, math.ceil(task_num * 1.5)))
+            edge_num = rd(task_num, min(task_num * task_num, math.ceil(task_num * 2)))
             level_num = min(level_num,task_num)
 
             node_for_level = self.generate_node_for_level(task_num, level_num)
@@ -872,8 +873,9 @@ def get_bandwidth(node1,node2, edge_list, cloud):
         bandwidth = cloud.data_rate
         return bandwidth
     else:
-        bandwidth = edge_list[node1].upload_data_rate
+        bandwidth = edge_list[node1].upload_data_rate_vector[node2]
         return bandwidth
 
 if __name__ == '__main__':
     pass
+
